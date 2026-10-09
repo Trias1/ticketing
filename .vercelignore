@@ -1,0 +1,9 @@
+# Jangan pernah ikut terunggah ke Vercel.
+.env*
+!.env.example
+node_modules
+.next
+*.tsbuildinfo
+structure.txt
+user.json
+_qa

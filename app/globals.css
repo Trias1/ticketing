@@ -1,0 +1,172 @@
+﻿@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-tk-bg: #fafafa;
+  --color-tk-surface: #ffffff;
+  --color-tk-subtle: #f4f4f5;
+  --color-tk-border: #e4e4e7;
+  --color-tk-divider: #efeff1;
+  --color-tk-text: #18181b;
+  --color-tk-muted: #52525b;
+  --color-tk-faint: #a1a1aa;
+  --color-tk-accent: #0f766e;
+  --color-tk-accent-hover: #115e59;
+  --color-tk-accent-soft: #e6f4f1;
+  --color-tk-blue: #1d4ed8;
+  --color-tk-blue-soft: #eaf0fd;
+  --color-tk-violet: #6d28d9;
+  --color-tk-violet-soft: #f3effe;
+  --color-tk-green: #15803d;
+  --color-tk-green-soft: #eaf6ee;
+  --color-tk-orange: #a16207;
+  --color-tk-orange-soft: #fdf6e3;
+  --color-tk-red: #b91c1c;
+  --color-tk-red-soft: #fdecec;
+
+  --color-tk-dark-bg: #111113;
+  --color-tk-dark-surface: #18181b;
+  --color-tk-dark-subtle: #222225;
+  --color-tk-dark-border: #2e2e33;
+  --color-tk-dark-divider: #26262a;
+  --color-tk-dark-text: #f4f4f5;
+  --color-tk-dark-muted: #a1a1aa;
+  --color-tk-dark-faint: #71717a;
+
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --animate-fade-in: fadeIn 0.2s ease-out;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-5%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  /* v4 tidak lagi memberi cursor pointer & warna placeholder bawaan seperti v3. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+}
+
+@utility page-shell {
+  @apply w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8;
+}
+
+@utility surface-card {
+  @apply rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-gray-800 dark:bg-gray-900;
+}
+
+@layer utilities {
+  :root {
+    --background: #f3f4f6;
+    --foreground: #171717;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #111827;
+      --foreground: #ededed;
+    }
+  }
+
+  * {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-geist-sans), Arial, sans-serif;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    transition-duration: 150ms;
+    transition-property:
+      color, background-color, border-color, box-shadow, opacity, transform;
+    transition-timing-function: ease-out;
+  }
+}
+
+
+/* Autofill Chrome menimpa warna input; samakan dengan permukaan tema. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1f1e24;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #1f1e24;
+  transition: background-color 9999s ease-out;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ececef;
+  -webkit-box-shadow: 0 0 0 1000px #1f1e24 inset;
+  caret-color: #ececef;
+}
+
+/* Markdown di dalam app mengikuti font & warna tema, bukan gaya bawaan library. */
+.tk-markdown .wmde-markdown {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  color: inherit;
+  background: transparent;
+}
+.tk-markdown .wmde-markdown h1,
+.tk-markdown .wmde-markdown h2,
+.tk-markdown .wmde-markdown h3 {
+  border-bottom: none;
+  font-weight: 600;
+  margin-top: 1em;
+}
+.tk-markdown .wmde-markdown h1 { font-size: 1.35em; }
+.tk-markdown .wmde-markdown h2 { font-size: 1.2em; }
+.tk-markdown .wmde-markdown h3 { font-size: 1.05em; }
+.tk-markdown .wmde-markdown a { color: #0f766e; }
+.dark .tk-markdown .wmde-markdown a { color: #5eead4; }
+.tk-markdown .wmde-markdown img { border-radius: 8px; max-height: 420px; }
+.tk-markdown .wmde-markdown blockquote { border-left-color: #0f766e; }
