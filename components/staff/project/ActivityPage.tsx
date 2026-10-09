@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { Activity } from "lucide-react";
 import { Avatar, EmptyState, Skeleton, formatDate, timeAgo } from "components/ui/kit";
-import { fetcher, useProject } from "../hooks";
+import { fetcher } from "../hooks";
 import { ActivityIcon, activityText } from "../issue-ui";
 import PageTitle from "./ProjectHeader";
 
@@ -22,7 +22,6 @@ type Event = {
 
 // Riwayat project, dikelompokkan per hari.
 export default function ActivityPage({ projectId }: { projectId: string }) {
-  const { data: project } = useProject(projectId);
   const { data: events, isLoading } = useSWR<Event[]>(`/api/projects/${projectId}/activity`, fetcher, { refreshInterval: 30_000 });
 
   const groups = new Map<string, Event[]>();

@@ -138,7 +138,6 @@ export function Avatar({
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
       {hasImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={src!} alt="" className="h-full w-full rounded-full object-cover" />
       ) : (
         <span

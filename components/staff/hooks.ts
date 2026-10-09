@@ -80,7 +80,9 @@ const LAST_PROJECT_KEY = "tk:lastProject";
 export function rememberProject(id: string) {
   try {
     localStorage.setItem(LAST_PROJECT_KEY, id);
-  } catch {}
+  } catch {
+    // localStorage bisa tidak tersedia (mode privat); hanya kenyamanan, aman diabaikan.
+  }
 }
 
 export function lastProjectId() {

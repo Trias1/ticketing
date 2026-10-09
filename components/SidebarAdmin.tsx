@@ -24,7 +24,9 @@ export default function Sidebar({ onToggleWidth }: { onToggleWidth?: (collapsed:
         if (!res.ok) return;
         const { user } = await res.json();
         setUser(user);
-      } catch {}
+      } catch {
+        // Gagal memuat user: sidebar tetap tampil tanpa nama; layout yang mengarahkan ke login.
+      }
     };
 
     fetchUser();

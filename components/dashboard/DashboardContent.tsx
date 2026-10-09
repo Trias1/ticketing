@@ -40,7 +40,7 @@ export default function DashboardContent({ team }: { team: string }) {
     };
 
     checkUser();
-  }, [team]);
+  }, [team, router]);
 
   if (loading || !user) return null;
 

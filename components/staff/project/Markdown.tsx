@@ -30,6 +30,7 @@ const TASK_LINE = /^[ \t]*[-*][ \t]+\[( |x|X)\][ \t]+.*$/gm;
 function safeUrl(url: string) {
   const trimmed = url.trim();
   // Browser mengabaikan spasi & karakter kontrol di skema (mis. "java\tscript:"), jadi cek versi yang sudah dibersihkan.
+  // eslint-disable-next-line no-control-regex -- sengaja: buang karakter kontrol sebelum cek skema URL.
   const compact = trimmed.replace(/[\u0000-\u0020\u007f]+/g, "");
   if (/^(https?:|mailto:)/i.test(compact)) return trimmed;
   if (/^[a-z][a-z0-9+.-]*:/i.test(compact)) return "";

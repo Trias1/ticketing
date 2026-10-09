@@ -80,7 +80,7 @@ export async function middleware(request: NextRequest) {
     return next();
   }
 
-  const dashboardMatch = pathname.match(/^\/dashboard\/([^\/]+)/);
+  const dashboardMatch = pathname.match(/^\/dashboard\/([^/]+)/);
   if (dashboardMatch) {
     const pathTeam = dashboardMatch[1];
 
