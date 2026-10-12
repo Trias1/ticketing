@@ -27,7 +27,7 @@ Code: `lib/session.ts` (issue, rotate, revoke; Edge-safe so the middleware can u
 **Flow**
 
 1. `POST /api/login` checks the password and starts a session: one refresh-token *family* per sign-in.
-2. Page requests: `middleware.ts` verifies the access token. If it has expired but a refresh token is present, the middleware rotates it before the page renders, so the user never sees it.
+2. Page requests: `proxy.ts` (Next.js middleware) verifies the access token. If it has expired but a refresh token is present, the proxy rotates it before the page renders, so the user never sees it.
 3. API requests from the browser: `components/AuthFetch.tsx` wraps `fetch`. On a `401` from `/api/*` it calls `POST /api/auth/refresh` once (shared by all requests that failed at the same time) and retries. If the refresh fails it sends the user to `/login`.
 4. `POST /api/logout` revokes the device's family in the database and clears the cookies, so a copied cookie stops working too.
 

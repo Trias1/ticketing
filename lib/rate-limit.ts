@@ -33,6 +33,9 @@ export const passwordCheckLimit = (userId: string): Limit => ({
 export const apiWriteLimit = (ip: string): Limit => ({ key: `api:write:ip:${ip}`, max: 120, windowSec: MINUTE, lockSec: MINUTE });
 // Refresh token per IP (token acak 256-bit, tapi tetap dibatasi supaya tidak bisa dibanjiri).
 export const refreshLimit = (ip: string): Limit => ({ key: `auth:refresh:ip:${ip}`, max: 60, windowSec: MINUTE, lockSec: MINUTE });
+// Health check dengan query database (/api/health?deep=1) per IP, supaya tidak bisa dipakai
+// untuk terus membangunkan database.
+export const healthDeepLimit = (ip: string): Limit => ({ key: `health:deep:ip:${ip}`, max: 6, windowSec: MINUTE, lockSec: MINUTE });
 
 // Aksi per user yang mahal atau mudah di-spam.
 export const userLimits = {
