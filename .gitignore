@@ -51,3 +51,5 @@ _qa
 
 # smoke test lokal
 .role-smoke*
+# password sementara superadmin (lokal, hapus setelah dipakai)
+.superadmin-temp-password.local

@@ -50,7 +50,7 @@ export default function AdminOverview() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Administration</h1>
             <p className="mt-1 text-sm text-tk-muted dark:text-tk-dark-muted">
-              Manage team members and monitor account security.
+              Manage every account and monitor account security.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -106,7 +106,7 @@ export default function AdminOverview() {
           <UserList
             title={
               <span className="flex items-center gap-2">
-                Admin accounts {data && <Badge>{data.counts.admins}</Badge>}
+                Superadmin {data && <Badge>{data.counts.admins}</Badge>}
               </span>
             }
             users={data?.admins}
