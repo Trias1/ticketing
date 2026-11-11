@@ -17,14 +17,14 @@ There are three kinds of account:
 |---|---|
 | **User** | Works on issues in the projects they belong to. Belongs to one team: Cloud, DevOps or PM. |
 | **Admin** | A user who also looks after the accounts in their own team: creates users, resets their passwords and deactivates them. Works in projects like any user. |
-| **Superadmin** | Looks after every account, account security and monitoring. Superadmins never see projects or issues. |
+| **Superadmin** | The owner of the app. There is only one. Looks after every account, account security and monitoring, and never sees projects or issues. |
 
 Who can create which account:
 
 | | Can create |
 |---|---|
-| Superadmin | Superadmins, admins and users, in any team |
-| Admin | Users in their own team only |
+| Superadmin | Admins, one or more per team |
+| Admin | Users in their own team |
 | User | Nobody |
 
 There's no self sign-up. New accounts start with a temporary password that has to be changed at the first sign-in.
@@ -72,7 +72,7 @@ Open your profile from the menu with your avatar. There you can change:
 - your **email**, which needs your current password
 - your **password**. Changing it signs you out on every other device.
 
-Your role and team are set by a superadmin.
+Your role and team are set by the superadmin.
 
 ### Sessions
 
@@ -171,11 +171,13 @@ An admin works in projects like any user, and also looks after the user accounts
 - **Team members** lists everyone in your team. For users in your team you can **reset the password** (type one, or leave it empty to get a temporary one like `k7mp-x3qa-9tfe`, shown only once) and **deactivate** or **activate** the account. Both sign the person out everywhere.
 - **New user** creates a user in your team. Use **Generate** for a strong temporary password and share it safely; the person changes it at their first sign-in.
 
-You can't change anyone's role or team, and you can't manage other admins or superadmins. Ask a superadmin for that. Adding people to projects is done by the project's owners.
+You can't change anyone's role or team, and you can't manage other admins or the superadmin. Ask the superadmin for that. Adding people to projects is done by the project's owners.
 
 ## For superadmins
 
-Superadmins look after every account and the security of the whole app. Following the rule that people outside a team don't read its work, superadmins **never see projects or issues**, not even counts.
+There is one superadmin: the owner of the app, created when the app is installed. A superadmin can't be created, promoted or demoted from inside the app.
+
+The superadmin looks after every account and the security of the whole app. Following the rule that people outside a team don't read its work, the superadmin **never sees projects or issues**, not even counts.
 
 ### Dashboard
 
@@ -184,19 +186,21 @@ The dashboard shows the number of accounts, who is online now, superadmin accoun
 **Needs attention** flags:
 
 - an active account using an `@example.com` email, which is usually a leftover seed account
-- more than 3 superadmin accounts
+- more than one superadmin account
 - accounts with no activity for over 30 days
 - accounts that have never signed in
 
 ### Creating an account
 
-Go to **New user**. Enter the name, email and a password, then choose the role: **User**, **Admin** or **Superadmin**. Users and admins also get a team (Cloud, DevOps or PM); superadmins have none. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
+Go to **New team admin**. Enter the name, email and a password, and choose the team (Cloud, DevOps or PM). The account is created as that team's **admin**; the admin then creates the users of the team. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
+
+The superadmin doesn't create users directly.
 
 ### Managing accounts
 
-On **Users** you can filter by All / Admins / Active / Deactivated and search by name or email. **Admins** lists superadmins and admins. For each account you can:
+On **Users** you can filter by All / Admins / Active / Deactivated and search by name or email. **Admins** lists the superadmin and the team admins. For each account you can:
 
-- **Change role**: signs the person out everywhere. Turning someone into a superadmin removes them from their projects and unassigns their issues.
+- **Change role** between admin and user: signs the person out everywhere.
 - **Change team** (users and admins).
 - **Deactivate**: the person can no longer sign in and is signed out everywhere. Projects they owned are handed to the longest-standing active member. **Activate** lets them back in.
 - **Reset password**: type a new password, or leave it empty to get a temporary one. It's shown only once, so copy it. The person must change it at their next sign-in.
@@ -211,7 +215,7 @@ Watch for **token reuse** events: they mean an old session token was used again,
 
 ## Common questions
 
-**I forgot my password.** Ask your team's admin, or a superadmin, to reset it. You'll get a temporary password and choose your own after signing in.
+**I forgot my password.** Ask your team's admin, or the superadmin, to reset it. You'll get a temporary password and choose your own after signing in.
 
 **It says "Too many sign-in attempts".** Wait 15 minutes, then try again with the right password.
 

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
-import { ROLES, SUPERADMIN_TEAM, roleLabel } from "lib/roles";
+import { SUPERADMIN_TEAM, roleLabel } from "lib/roles";
 import { PROJECT_TEAMS } from "lib/team-access";
 import {
   Avatar,
@@ -36,11 +36,8 @@ type User = {
   canManage?: boolean;
 };
 
-const TEAMS_BY_ROLE: Record<string, readonly string[]> = {
-  superadmin: [SUPERADMIN_TEAM],
-  admin: PROJECT_TEAMS,
-  user: PROJECT_TEAMS,
-};
+// Superadmin hanya bisa mengubah admin <-> user dan timnya; role superadmin tidak bisa diberikan/dicabut.
+const EDITABLE_ROLES = ["admin", "user"] as const;
 const ONLINE_WINDOW_MS = 60 * 1000;
 const NOT_MANAGEABLE = "Only a superadmin can manage this account";
 
@@ -164,7 +161,7 @@ export default function ManagementUserPage() {
             </p>
           </div>
           <ButtonLink href={`/dashboard/${myTeam || SUPERADMIN_TEAM}/register-user`}>
-            <UserPlus className="h-4 w-4" /> New user
+            <UserPlus className="h-4 w-4" /> {superadmin ? "New team admin" : "New user"}
           </ButtonLink>
         </div>
 
@@ -249,23 +246,16 @@ export default function ManagementUserPage() {
                         </td>
 
                         <td className="px-4 py-3">
-                          {superadmin ? (
+                          {superadmin && u.role !== "superadmin" ? (
                           <select
                             aria-label={`Role ${u.name}`}
                             disabled={busy || isMe}
                             title={isMe ? "You can't change your own role" : undefined}
                             value={u.role}
-                            onChange={(e) =>
-                              updateRole(
-                                u,
-                                e.target.value,
-                                // Pindah antara admin & user: tim tetap. Ke/dari superadmin: tim ikut berubah.
-                                TEAMS_BY_ROLE[e.target.value].includes(u.team) ? u.team : TEAMS_BY_ROLE[e.target.value][0]
-                              )
-                            }
+                            onChange={(e) => updateRole(u, e.target.value, u.team)}
                             className={selectClass}
                           >
-                            {ROLES.map((r) => (
+                            {EDITABLE_ROLES.map((r) => (
                               <option key={r} value={r}>
                                 {roleLabel(r)}
                               </option>
@@ -277,15 +267,15 @@ export default function ManagementUserPage() {
                         </td>
 
                         <td className="px-4 py-3">
-                          {superadmin ? (
+                          {superadmin && u.role !== "superadmin" ? (
                           <select
                             aria-label={`Team ${u.name}`}
-                            disabled={busy || u.role === "superadmin"}
+                            disabled={busy}
                             value={u.team}
                             onChange={(e) => updateRole(u, u.role, e.target.value)}
                             className={selectClass}
                           >
-                            {TEAMS_BY_ROLE[u.role]?.map((t) => (
+                            {PROJECT_TEAMS.map((t) => (
                               <option key={t} value={t}>
                                 {TEAM_LABEL[t] ?? t}
                               </option>

@@ -62,11 +62,11 @@ export async function GET() {
         description: "Sample accounts created by the seed script usually use a default password. Deactivate it or change its password.",
         users: seedAccounts,
       },
-      admins.length > 3 && {
+      admins.length > 1 && {
         id: "admins",
         severity: "medium",
         title: `${admins.length} accounts have the superadmin role`,
-        description: "Keep superadmins to a minimum. Every superadmin can change roles and deactivate any account.",
+        description: "There should be only one superadmin, the owner. Extra superadmins can only come from the seed script or the database; check that each one is expected.",
         users: admins,
       },
       dormant.length > 0 && {

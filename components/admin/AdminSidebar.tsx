@@ -31,7 +31,7 @@ const sections: { title: string; items: NavItem[] }[] = [
     title: "Members",
     items: [
       { name: "Users", href: "/dashboard/superadmin/management-user", icon: Users },
-      { name: "New user", href: "/dashboard/superadmin/register-user", icon: UserPlus },
+      { name: "New team admin", href: "/dashboard/superadmin/register-user", icon: UserPlus },
     ],
   },
   {

@@ -1,6 +1,6 @@
-import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { db } from "db";
-import { projectMembers, projects, tickets, users } from "db/schema";
+import { projectMembers, projects, users } from "db/schema";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: unknown): value is string => typeof value === "string" && UUID_RE.test(value);
@@ -62,26 +62,4 @@ export function orphanWarning(orphaned: { name: string }[]) {
 // User dinonaktifkan: keanggotaan disimpan (untuk diaktifkan lagi), tapi kepemilikan project diserahkan.
 export async function onUserDeactivated(userId: string) {
   return handOverOwnership(userId);
-}
-
-// User berhenti bekerja di project (diubah jadi superadmin): keluar dari semua project,
-// kecuali project yang tidak punya member aktif lain (supaya tidak jadi project tanpa member).
-export async function onUserLeftProjects(userId: string) {
-  const orphaned = await handOverOwnership(userId);
-  const keep = orphaned.map((p) => p.id);
-  const memberships = await db
-    .select({ projectId: projectMembers.projectId })
-    .from(projectMembers)
-    .where(eq(projectMembers.userId, userId));
-  const projectIds = memberships.map((m) => m.projectId).filter((id) => !keep.includes(id));
-  if (projectIds.length) {
-    await db
-      .update(tickets)
-      .set({ assignedTo: null })
-      .where(and(eq(tickets.assignedTo, userId), inArray(tickets.projectId, projectIds)));
-  }
-  if (projectIds.length) {
-    await db.delete(projectMembers).where(and(eq(projectMembers.userId, userId), inArray(projectMembers.projectId, projectIds)));
-  }
-  return orphaned;
 }

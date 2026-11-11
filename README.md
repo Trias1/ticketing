@@ -1,6 +1,6 @@
 # Ticketing MS
 
-A self-hosted ticketing workspace for small teams. Users run their work in projects with issues, a board and a calendar; team admins look after their team's accounts; superadmins look after every account and the security log, without ever seeing a team's projects.
+A self-hosted ticketing workspace for small teams. Users run their work in projects with issues, a board and a calendar; team admins look after their team's accounts; one superadmin, the owner, looks after every account and the security log without ever seeing a team's projects.
 
 **Live:** [ticketing.west-solutions.web.id](https://ticketing.west-solutions.web.id) · **License:** [MIT](LICENSE)
 
@@ -20,8 +20,8 @@ A self-hosted ticketing workspace for small teams. Users run their work in proje
 | Role | Does |
 |---|---|
 | **User** | Works on issues in the projects they belong to |
-| **Admin** | Works in projects too, and creates, resets and deactivates the user accounts of their own team |
-| **Superadmin** | Manages every account, role and team, and watches the security log. Never sees projects or issues |
+| **Admin** | Works in projects too, and creates, resets and deactivates the user accounts of their own team. Created by the superadmin |
+| **Superadmin** | The owner; there is only one. Creates team admins, manages every account, role and team, and watches the security log. Never sees projects or issues |
 
 ### For users and admins
 - **Projects you belong to.** Switch between them from the sidebar or jump anywhere with <kbd>Ctrl</kbd> + <kbd>K</kbd>. One person can be in many projects; star the ones you use most.
@@ -30,10 +30,10 @@ A self-hosted ticketing workspace for small teams. Users run their work in proje
 - **My issues and a dashboard.** What's assigned to you, what you opened, what's overdue and what's due this week, across every project.
 - **Project settings for owners.** Members and roles, labels with colors, board columns, and the project's name, icon and color.
 
-### For superadmins
-- **Accounts.** Create accounts, change role and team, deactivate, or reset a password with a one-time temporary password.
-- **Security overview.** Dormant and never-used accounts, superadmin accounts, and a sign-in log showing successful, failed and blocked sign-ins with IP address and device.
-- Superadmins don't take part in projects. They manage people, not tickets.
+### For the superadmin
+- **Accounts.** Create team admins, switch accounts between admin and user, change teams, deactivate, or reset a password with a one-time temporary password.
+- **Security overview.** Dormant and never-used accounts, extra superadmin accounts, and a sign-in log showing successful, failed and blocked sign-ins with IP address and device.
+- The superadmin doesn't take part in projects: people, not tickets.
 
 ## Security
 

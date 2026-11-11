@@ -22,7 +22,7 @@ type Crumb = { label: string; href: string };
 
 const ADMIN_PAGES: Record<string, string> = {
   "management-user": "Users",
-  "register-user": "New user",
+  "register-user": "New team admin",
   security: "Account security",
   profile: "Edit profile",
 };

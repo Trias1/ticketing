@@ -36,8 +36,8 @@ const ADMIN_FEATURES = [
     body: "Each team's admin creates the team's user accounts, resets their passwords and deactivates them, and works in projects like everyone else.",
   },
   {
-    title: "Superadmins",
-    body: "Manage every account, role and team, with dormant-account checks and a sign-in log with IP address and device. They never see projects or issues.",
+    title: "One superadmin",
+    body: "The owner creates each team's admin and sees every account, with dormant-account checks and a sign-in log with IP address and device. Never sees projects or issues.",
   },
 ];
 

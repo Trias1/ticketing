@@ -1,7 +1,7 @@
 import { newPasswordProblem, registerUser } from "lib/auth";
 import { limitUser, requirePeopleManager } from "lib/api-auth";
 import { userLimits } from "lib/rate-limit";
-import { SUPERADMIN_TEAM, isRole, isSuperadmin } from "lib/roles";
+import { isSuperadmin } from "lib/roles";
 import { isProjectTeam } from "lib/team-access";
 
 const json = (body: unknown, status: number) =>
@@ -10,7 +10,7 @@ const json = (body: unknown, status: number) =>
     headers: { "Content-Type": "application/json" },
   });
 
-// Membuat akun baru. Superadmin: role & tim apa saja. Admin: hanya user di timnya sendiri.
+// Membuat akun baru. Superadmin: admin tim. Admin: user di timnya sendiri.
 export async function POST(req: Request) {
   const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
@@ -22,20 +22,18 @@ export async function POST(req: Request) {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
-    const superadmin = isSuperadmin(auth.user);
-    const role = superadmin ? body.role : "user";
-    const team = superadmin ? body.team : auth.user.team;
+    // Superadmin hanya membuat admin tim; user hanya dibuat oleh admin timnya. Superadmin baru tidak
+    // pernah dibuat dari aplikasi (hanya lewat scripts/seed-user.ts).
+    const role = isSuperadmin(auth.user) ? "admin" : "user";
+    const team = isSuperadmin(auth.user) ? body.team : auth.user.team;
 
     if (!name || !email || !password) {
       return json({ message: "Name, email, and password are required" }, 400);
     }
     const problem = await newPasswordProblem(password, { email, name });
     if (problem) return json({ message: problem }, 400);
-    if (!isRole(role)) {
-      return json({ message: "Invalid role" }, 400);
-    }
-    if (role === "superadmin" ? team !== SUPERADMIN_TEAM : !isProjectTeam(team)) {
-      return json({ message: "Invalid team for this role" }, 400);
+    if (!isProjectTeam(team)) {
+      return json({ message: "Invalid team" }, 400);
     }
 
     const result = await registerUser({ name, email, password, role, team });

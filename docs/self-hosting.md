@@ -57,7 +57,7 @@ The SQL files in `drizzle/` are the history of the original deployment. You don'
 
 ## 4. Create the first superadmin
 
-The script creates a **superadmin** account. Superadmins manage every account and the security log but never see projects or issues; see [roles](user-guide.md#roles).
+The script creates the **superadmin**: the owner of the install. It manages every account and the security log but never sees projects or issues; see [roles](user-guide.md#roles). This is the only way to create a superadmin; the app itself can't.
 
 Pick your own long, unique password. It must follow the [password rules](user-guide.md#setting-your-own-password) and can't contain the word "admin".
 
@@ -81,7 +81,7 @@ For development:
 npm run dev
 ```
 
-Open http://localhost:3000 and sign in with the superadmin account. Under **New user**, create an **admin** for each team; admins then create the users of their own team.
+Open http://localhost:3000 and sign in with the superadmin account. Under **New team admin**, create an admin for each team; admins then create the users of their own team.
 
 ## Deploying
 
@@ -144,7 +144,7 @@ Installs from before this change have two roles, `admin` and `staff`. Run [`driz
   - `components/ui/kit.tsx` and `components/admin/AdminOverview.tsx`: team labels and colors
 - **Neon only.** The database driver is `@neondatabase/serverless` over HTTP.
 - **Cloudinary only** for uploads. Using another image host means changing the upload routes, the `img-src` rule of the Content Security Policy in `next.config.js`, and the allowed avatar URLs in `app/api/profileusers/route.ts`.
-- **No self sign-up and no email.** Superadmins and team admins create accounts and reset passwords; nothing is sent by email.
+- **No self sign-up and no email.** The superadmin creates team admins and team admins create users; nothing is sent by email.
 - **Images in Markdown must be uploaded.** The Content Security Policy blocks images from other websites.
 
 ## Links on the home page

@@ -66,7 +66,7 @@ export default function AdminOverview() {
               <Users className="h-4 w-4" /> Manage users
             </ButtonLink>
             <ButtonLink href="/dashboard/superadmin/register-user">
-              <UserPlus className="h-4 w-4" /> New user
+              <UserPlus className="h-4 w-4" /> New team admin
             </ButtonLink>
           </div>
         </div>
