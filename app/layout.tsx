@@ -17,7 +17,7 @@ const geistMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: "Ticketing MS",
-  description: "Internal ticketing for the Cloud, DevOps, and PM teams",
+  description: "Open-source, self-hosted ticketing for small teams.",
 };
 
 export default function RootLayout({

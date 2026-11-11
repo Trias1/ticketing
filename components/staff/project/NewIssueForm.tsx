@@ -84,7 +84,7 @@ export default function NewIssueForm({ projectId }: { projectId: string }) {
               setError("");
             }}
             maxLength={200}
-            placeholder="Short summary, e.g. reboot compute-1 JAH, hardware power issue"
+            placeholder="Short summary, e.g. Checkout page times out on mobile"
             className="h-10 w-full rounded-md border border-tk-border bg-tk-surface px-3 text-base focus:border-tk-accent focus:outline-hidden focus:ring-2 focus:ring-tk-accent/20 dark:border-tk-dark-border dark:bg-tk-dark-surface"
           />
           {error && <p className="mt-1 text-sm text-tk-red dark:text-[#fca5a5]">{error}</p>}

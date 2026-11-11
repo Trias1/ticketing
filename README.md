@@ -4,6 +4,13 @@ A self-hosted ticketing workspace for small teams. Admins look after people and 
 
 **Live:** [ticketing.west-solutions.web.id](https://ticketing.west-solutions.web.id) · **License:** [MIT](LICENSE)
 
+## Documentation
+
+- [User guide](docs/user-guide.md): accounts, projects, issues, board and calendar, and the admin pages
+- [Self-hosting guide](docs/self-hosting.md): setup, deploying, upgrading and known limitations
+- [Security](docs/security.md): how sessions, rate limits and passwords work
+- [Contributing](CONTRIBUTING.md) and [reporting a vulnerability](SECURITY.md)
+
 ---
 
 ## What's inside
@@ -45,7 +52,7 @@ The details, including how to run the migrations, are in [`docs/security.md`](do
 
 ## Getting started
 
-**Requirements:** Node.js 20.9 or newer, a Postgres database (Neon works out of the box), and a Cloudinary account for image uploads.
+**Requirements:** Node.js 20.9 or newer, a [Neon](https://neon.tech) Postgres database (the app uses Neon's serverless driver; the free plan is enough), and a Cloudinary account for image uploads.
 
 ```bash
 git clone https://github.com/Trias1/ticketing.git
@@ -53,11 +60,11 @@ cd ticketing
 npm install
 ```
 
-Create `.env.local`:
+Copy `.env.example` to `.env.local` and fill it in:
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | Postgres connection string |
+| `DATABASE_URL` | Neon Postgres connection string |
 | `JWT_SECRET` | Random string, at least 32 characters |
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Cloudinary API key |
@@ -73,7 +80,7 @@ Set up the database and the first admin. Replace `...` with your own long, uniqu
 
 ```bash
 npx drizzle-kit push
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD=... npx tsx scripts/seed-user.ts
+SEED_ADMIN_EMAIL=you@yourcompany.com SEED_ADMIN_PASSWORD=... npx tsx scripts/seed-user.ts
 ```
 
 Then start the app:
@@ -84,7 +91,9 @@ npm run dev
 
 Open http://localhost:3000 and sign in with the admin account you just created.
 
-> `.env*` files are ignored by git and by Vercel uploads. Never commit real credentials.
+> `.env*` files (except `.env.example`) are ignored by git and by Vercel uploads. Never commit real credentials.
+
+Deploying to Vercel or your own server, upgrading, and the current limitations (such as the fixed Cloud, DevOps and PM teams) are covered in the [self-hosting guide](docs/self-hosting.md).
 
 ## Health check
 
@@ -104,7 +113,7 @@ components/     UI: admin, staff workspace, shared kit
 db/             Drizzle schema and database client
 drizzle/        SQL migrations
 lib/            Auth, sessions, rate limits, access control, queries
-docs/           Design notes and security documentation
+docs/           User guide, self-hosting guide, design notes and security documentation
 scripts/        One-off scripts (first admin)
 ```
 
@@ -119,9 +128,9 @@ scripts/        One-off scripts (first admin)
 
 ## Contributing
 
-Issues and pull requests are welcome. Please keep changes focused, run `npm run lint` and `npx tsc --noEmit` before opening a PR, and never include credentials or real user data.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up, check and submit a change.
 
-If you find a security problem, please report it privately instead of opening a public issue.
+If you find a security problem, please report it privately as described in [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 ## License
 

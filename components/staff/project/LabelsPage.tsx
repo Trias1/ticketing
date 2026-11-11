@@ -38,7 +38,7 @@ function LabelEditor({
     >
       <div className="flex flex-wrap items-center gap-3">
         <LabelChip name={name || "Label preview"} color={color} />
-        <input autoFocus value={name} onChange={(e) => setName(e.target.value)} maxLength={50} required placeholder="Label name, e.g. JAH" className="h-8 w-48 rounded-md border border-tk-border bg-tk-surface px-2 text-sm focus:border-tk-accent focus:outline-hidden dark:border-tk-dark-border dark:bg-tk-dark-surface" />
+        <input autoFocus value={name} onChange={(e) => setName(e.target.value)} maxLength={50} required placeholder="Label name, e.g. Backend" className="h-8 w-48 rounded-md border border-tk-border bg-tk-surface px-2 text-sm focus:border-tk-accent focus:outline-hidden dark:border-tk-dark-border dark:bg-tk-dark-surface" />
         <input value={description} onChange={(e) => setDescription(e.target.value)} maxLength={200} placeholder="Description (optional)" className="h-8 min-w-[200px] flex-1 rounded-md border border-tk-border bg-tk-surface px-2 text-sm focus:border-tk-accent focus:outline-hidden dark:border-tk-dark-border dark:bg-tk-dark-surface" />
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -122,7 +122,7 @@ export default function LabelsPage({ projectId }: { projectId: string }) {
               ))}
             </div>
           ) : !labels?.length && editing !== "new" ? (
-            <EmptyState icon={Tag} title="No labels yet" description="Labels group issues, e.g. by site (JAH, TBS, TKP) or type (Bug, Feature)." />
+            <EmptyState icon={Tag} title="No labels yet" description="Labels group issues, e.g. by area (Backend, Mobile) or type (Bug, Feature)." />
           ) : (
             <ul className="divide-y divide-tk-divider dark:divide-tk-dark-divider">
               {labels?.map((l) =>

@@ -41,7 +41,7 @@ export function ProjectIdentityFields({
         <label htmlFor="project-name" className="mb-1 block text-sm font-semibold">
           Project name
         </label>
-        <input id="project-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required placeholder="Manage Service Lintasarta" className={inputClass} />
+        <input id="project-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required placeholder="Website redesign" className={inputClass} />
       </div>
       <div>
         <label htmlFor="project-desc" className="mb-1 block text-sm font-semibold">
