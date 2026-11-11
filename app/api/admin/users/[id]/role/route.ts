@@ -8,7 +8,7 @@ import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
 import { isUuid } from "lib/membership";
 import { isSuperadmin } from "lib/roles";
-import { teamExists } from "lib/teams";
+import { otherActiveAdmin, teamExists } from "lib/teams";
 
 export async function PATCH(
   request: Request,
@@ -48,6 +48,13 @@ export async function PATCH(
     }
     if (isSuperadmin(before)) {
       return NextResponse.json({ message: "A superadmin's role can't be changed" }, { status: 400 });
+    }
+    // Satu tim satu admin: tim tidak boleh dipakai bersama admin lain.
+    if (role === "admin" && before.isActive !== false) {
+      const other = await otherActiveAdmin(team, userId);
+      if (other) {
+        return NextResponse.json({ message: `This team already has an admin (${other})` }, { status: 400 });
+      }
     }
 
     const updatedUser = await db

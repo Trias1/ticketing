@@ -8,6 +8,7 @@ import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
 import { isUuid, onUserDeactivated, orphanWarning } from "lib/membership";
 import { canManageAccount, isSuperadmin } from "lib/roles";
+import { otherActiveAdmin } from "lib/teams";
 
 // =====================
 // GET - Fetch users
@@ -62,6 +63,17 @@ export async function POST(req: Request) {
   const target = await db.query.users.findFirst({ where: eq(users.id, id), columns: { role: true, team: true } });
   if (!target || !canManageAccount(currentUser, target)) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  // Mengaktifkan lagi admin lama: timnya mungkin sudah punya admin baru (satu tim satu admin).
+  if (isActive && target.role === "admin") {
+    const other = await otherActiveAdmin(target.team, id);
+    if (other) {
+      return NextResponse.json(
+        { message: `This team already has an admin (${other}). Change this account to a user first.` },
+        { status: 400 }
+      );
+    }
   }
 
   await db.update(users).set({ isActive }).where(eq(users.id, id));

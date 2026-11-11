@@ -72,7 +72,7 @@ export default function TeamsPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Teams</h1>
             <p className="mt-1 text-sm text-tk-muted dark:text-tk-dark-muted">
-              A team is created together with its admin. Renaming a team keeps its accounts, projects and links.
+              Each team has one admin and is created together with it. Renaming a team keeps its accounts, projects and links.
             </p>
           </div>
           <ButtonLink href="/dashboard/superadmin/register-user">

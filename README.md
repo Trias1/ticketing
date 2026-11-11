@@ -31,7 +31,7 @@ A self-hosted ticketing workspace for small teams. Users run their work in proje
 - **Project settings for owners.** Members and roles, labels with colors, board columns, and the project's name, icon and color.
 
 ### For the superadmin
-- **Teams and accounts.** Create teams together with their admin, rename teams, switch accounts between admin and user, move them between teams, deactivate, or reset a password with a one-time temporary password.
+- **Teams and accounts.** Create each team together with its one admin, rename teams, switch accounts between admin and user, move them between teams, deactivate, or reset a password with a one-time temporary password.
 - **Security overview.** Dormant and never-used accounts, extra superadmin accounts, and a sign-in log showing successful, failed and blocked sign-ins with IP address and device.
 - The superadmin doesn't take part in projects: people, not tickets.
 

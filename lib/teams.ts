@@ -1,7 +1,7 @@
 import slugify from "slugify";
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { db } from "db";
-import { teams } from "db/schema";
+import { teams, users } from "db/schema";
 import { RESERVED_TEAM_SLUGS } from "lib/roles";
 
 // Tim kerja (tabel teams). Slug dipakai di URL dan di users.team / projects.team, jadi tidak pernah
@@ -20,6 +20,16 @@ export async function teamExists(slug: unknown) {
 
 const baseSlug = (name: string) =>
   slugify(name, { lower: true, strict: true }).slice(0, 36).replace(/-+$/, "") || "team";
+
+// Satu tim hanya punya satu admin aktif, supaya tim tidak dipakai bersama. Kembalikan nama admin
+// aktif lain di tim itu (selain exceptUserId), atau null kalau tim masih bebas.
+export async function otherActiveAdmin(team: string, exceptUserId: string) {
+  const other = await db.query.users.findFirst({
+    where: and(eq(users.team, team), eq(users.role, "admin"), ne(users.id, exceptUserId), ne(users.isActive, false)),
+    columns: { name: true },
+  });
+  return other?.name ?? null;
+}
 
 export function cleanTeamName(value: unknown) {
   return typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
