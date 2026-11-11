@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "components/SidebarAdmin";
 import Navbar from "components/Navbar";
 import { BrandMark } from "components/ui/kit";
+import DemoBanner from "components/DemoBanner";
 
 export default function TeamLayout({
   children,
@@ -68,6 +69,7 @@ export default function TeamLayout({
           isSidebarOpen ? "ml-64" : "ml-16"
         }`}
       >
+        <DemoBanner />
         <Navbar />
         <main className="min-w-0 flex-1 overflow-x-clip">{children}</main>
       </div>

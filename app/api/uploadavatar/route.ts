@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import cloudinary from "db/cloudinary";
 import { limitUser, requireUser } from "lib/api-auth";
 import { userLimits } from "lib/rate-limit";
+import { DEMO_UPLOAD_MESSAGE, isDemo } from "lib/demo";
 
 export async function POST(req: NextRequest) {
   const auth = await requireUser();
   if (auth.error) return auth.error;
+  if (isDemo()) return NextResponse.json({ error: DEMO_UPLOAD_MESSAGE, message: DEMO_UPLOAD_MESSAGE }, { status: 403 });
 
   // Tolak body besar SEBELUM dibaca ke memori (batas file + sedikit ruang untuk multipart).
   const declared = Number(req.headers.get("content-length") ?? 0);

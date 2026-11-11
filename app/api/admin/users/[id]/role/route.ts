@@ -9,6 +9,7 @@ import { clientIp, userLimits } from "lib/rate-limit";
 import { isUuid } from "lib/membership";
 import { isSuperadmin } from "lib/roles";
 import { otherActiveAdmin, teamExists } from "lib/teams";
+import { DEMO_LOCKED_MESSAGE, isProtectedDemoAccount } from "lib/demo";
 
 export async function PATCH(
   request: Request,
@@ -49,6 +50,7 @@ export async function PATCH(
     if (isSuperadmin(before)) {
       return NextResponse.json({ message: "A superadmin's role can't be changed" }, { status: 400 });
     }
+    if (isProtectedDemoAccount(before.email)) return NextResponse.json({ message: DEMO_LOCKED_MESSAGE }, { status: 403 });
     // Satu tim satu admin: tim tidak boleh dipakai bersama admin lain.
     if (role === "admin" && before.isActive !== false) {
       const other = await otherActiveAdmin(team, userId);

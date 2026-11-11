@@ -3,7 +3,8 @@ import Link from "next/link";
 import { BrandMark } from "components/ui/kit";
 import ThemeToggle from "components/ui/ThemeToggle";
 import BoardDemo from "components/home/BoardDemo";
-import { REPO_URL, docsUrl } from "lib/site";
+import { DEMO_URL, REPO_URL, docsUrl } from "lib/site";
+import { isDemo } from "lib/demo";
 
 export const metadata: Metadata = {
   title: "Ticketing MS: issue tracking for small teams",
@@ -113,9 +114,22 @@ export default function HomePage() {
             security for the people looking after them. Open source under the MIT license.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/login" className={primaryButton}>
-              Sign in
-            </Link>
+            {isDemo() ? (
+              <Link href="/login" className={primaryButton}>
+                Try the demo
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className={primaryButton}>
+                  Sign in
+                </Link>
+                {DEMO_URL && (
+                  <a href={DEMO_URL} className={secondaryButton}>
+                    Try the live demo
+                  </a>
+                )}
+              </>
+            )}
             <a href={docsUrl("self-hosting.md")} className={secondaryButton}>
               Host your own
             </a>

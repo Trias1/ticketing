@@ -7,6 +7,7 @@ import { useTheme } from "components/theme-provider";
 import { AlertTriangle, Eye, EyeOff, Loader2, Moon, Sun } from "lucide-react";
 import { BrandMark } from "components/ui/kit";
 import { SUPERADMIN_HOME, isSuperadmin, isWorkTeamSlug } from "lib/roles";
+import { DEMO_LOGINS, isDemo, type DemoLoginKey } from "lib/demo";
 
 function dashboardFor(user: { role?: string; team?: string }) {
   if (isSuperadmin(user)) return SUPERADMIN_HOME;
@@ -24,6 +25,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [demoBusy, setDemoBusy] = useState<DemoLoginKey | null>(null);
+  const demo = isDemo();
 
   // Sudah login? Langsung ke dashboard.
   useEffect(() => {
@@ -59,6 +62,29 @@ export default function LoginPage() {
     }
   };
 
+  // Demo: masuk sekali klik ke akun contoh, tanpa password.
+  const signInAsDemo = async (account: DemoLoginKey) => {
+    setError("");
+    setDemoBusy(account);
+    try {
+      const res = await fetch("/api/demo/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.message || "Sign in failed. Please try again.");
+        setDemoBusy(null);
+        return;
+      }
+      router.push(dashboardFor(data));
+    } catch {
+      setError("Can't reach the server. Check your connection and try again.");
+      setDemoBusy(null);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-tk-bg text-tk-text dark:bg-tk-dark-bg dark:text-tk-dark-text">
       <header className="flex justify-end p-3">
@@ -90,6 +116,37 @@ export default function LoginPage() {
             </div>
           )}
 
+          {demo && (
+            <div className="mb-5">
+              <h2 className="text-sm font-semibold">Try the demo</h2>
+              <p className="mt-1 text-xs text-tk-muted dark:text-tk-dark-muted">
+                Pick a role to look around. Everything resets every day at 07:00 WIB (00:00 UTC).
+              </p>
+              <div className="mt-3 space-y-2">
+                {DEMO_LOGINS.map((d) => (
+                  <button
+                    key={d.key}
+                    type="button"
+                    disabled={!!demoBusy}
+                    onClick={() => signInAsDemo(d.key)}
+                    className="flex w-full items-start gap-3 rounded-md border border-tk-border px-3 py-2 text-left hover:border-tk-accent hover:bg-tk-subtle disabled:cursor-not-allowed disabled:opacity-60 dark:border-tk-dark-border dark:hover:bg-tk-dark-subtle"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">{d.label}</span>
+                      <span className="block text-xs text-tk-muted dark:text-tk-dark-muted">{d.description}</span>
+                    </span>
+                    {demoBusy === d.key && <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center gap-3 text-xs text-tk-faint">
+                <span className="h-px flex-1 bg-tk-divider dark:bg-tk-dark-divider" />
+                or sign in with an account you created
+                <span className="h-px flex-1 bg-tk-divider dark:bg-tk-dark-divider" />
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="mb-1 block text-sm font-semibold">
@@ -99,7 +156,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 autoComplete="username"
-                autoFocus
+                autoFocus={!demo}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

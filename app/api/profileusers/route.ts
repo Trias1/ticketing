@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { db } from "db";
 import { users } from "db/schema";
 import { eq, sql } from "drizzle-orm";
+import { DEMO_LOCKED_MESSAGE, isProtectedDemoAccount } from "lib/demo";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs"; // pastikan sudah di-install
 
@@ -78,6 +79,10 @@ export async function POST(req: Request) {
 
   const emailChanging = updates.email !== undefined && updates.email !== sessionUser.email.toLowerCase();
   const passwordChanging = !!(currentPassword || newPassword || confirmPassword);
+  // Akun demo bawaan dipakai bersama: email & password-nya tidak bisa diganti.
+  if ((emailChanging || passwordChanging) && isProtectedDemoAccount(sessionUser.email)) {
+    return NextResponse.json({ message: DEMO_LOCKED_MESSAGE }, { status: 403 });
+  }
   const meta = requestMeta(req.headers, clientIp(req.headers));
 
   try {

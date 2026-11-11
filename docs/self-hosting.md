@@ -105,6 +105,35 @@ npm run start
 - **Serve it over HTTPS.** The app always sends `Strict-Transport-Security`, and session cookies are marked `Secure` in production, so plain HTTP won't keep you signed in.
 - **Set the `X-Real-IP` header** to the client's address. Rate limits and the sign-in log rely on it. For Nginx: `proxy_set_header X-Real-IP $remote_addr;`. Without it, all visitors share one rate limit.
 
+## Running a public demo
+
+You can run a second copy of the app as a public demo, with its own empty database. In demo mode:
+
+- The sign-in page has one-click buttons for a superadmin, a team admin and a user. Nobody knows these accounts' passwords.
+- The built-in demo accounts (`@demo.test`) can't be deactivated, moved to another role or team, or have their email or password changed, so the next visitor can still sign in. Accounts that visitors create work normally.
+- Image uploads are turned off, and every page shows a banner saying the data is public and resets daily.
+- A Vercel Cron job (`vercel.json`) wipes the database and loads the sample data again every day at 00:00 UTC.
+
+Setup on Vercel:
+
+1. Create a new Vercel project from the same repository and give it its own new Neon database (Storage, Neon). Never point it at your real database.
+2. Set `NEXT_PUBLIC_DEMO_MODE=1`, `JWT_SECRET` (a new one) and `CRON_SECRET` (any long random string) on that project.
+3. Put the demo database's connection string and `NEXT_PUBLIC_DEMO_MODE=1` in `.env.development.local`. Create the tables with the demo connection string set in the shell, because `drizzle-kit` doesn't read `.env.development.local` and would otherwise use `.env.local`:
+
+   ```bash
+   DATABASE_URL="<demo connection string>" npx drizzle-kit push
+   ```
+
+   Then load the sample data. The script reads `.env.development.local` like `npm run dev` does:
+
+   ```bash
+   npx tsx scripts/seed-demo.ts --init
+   ```
+
+4. Deploy. To show a "Try the live demo" button on your main instance's home page, set `NEXT_PUBLIC_DEMO_URL` there.
+
+The reset refuses to run unless demo mode is on and the database carries the `demo_instance` marker table. `--init` only adds that marker to a database that has no accounts yet, so the reset can't wipe a database that's already in use. The cron also runs on your main instance, but there the route just answers 404.
+
 ## Health check
 
 | Endpoint | Use it for |

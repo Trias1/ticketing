@@ -1,3 +1,4 @@
+import { DEMO_LOCKED_MESSAGE, isProtectedDemoAccount } from "lib/demo";
 import { NextResponse } from "next/server";
 import { randomInt } from "crypto";
 import { eq } from "drizzle-orm";
@@ -44,6 +45,8 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   if (!target || !canManageAccount(auth.user, target)) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
+
+  if (isProtectedDemoAccount(target.email)) return NextResponse.json({ message: DEMO_LOCKED_MESSAGE }, { status: 403 });
 
   // Boleh menentukan password sendiri; kalau kosong dibuatkan otomatis.
   const body = await req.json().catch(() => ({}));
