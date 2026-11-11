@@ -3,17 +3,20 @@ import { users } from "db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { revokeSessions } from "lib/auth";
-import { limitUser, requireAdmin } from "lib/api-auth";
+import { limitUser, requireSuperadmin } from "lib/api-auth";
 import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
-import { isUuid, onUserLeftStaff, orphanWarning } from "lib/membership";
+import { isUuid, onUserLeftProjects, orphanWarning } from "lib/membership";
+import { SUPERADMIN_TEAM, isRole, worksInProjects } from "lib/roles";
+import { isProjectTeam } from "lib/team-access";
 
 export async function PATCH(
   request: Request,
   props: { params: Promise<{ id: string }> }
 ) {
   const params = await props.params;
-  const auth = await requireAdmin();
+  // Hanya superadmin yang mengubah role & tim.
+  const auth = await requireSuperadmin();
   if (auth.error) return auth.error;
   const currentUser = auth.user;
   const limited = await limitUser(userLimits.adminAction(currentUser.id));
@@ -30,18 +33,12 @@ export async function PATCH(
     if (userId === currentUser.id) {
       return NextResponse.json({ message: "You can't change your own role" }, { status: 400 });
     }
-    const validRoles = ["admin", "staff"];
-    const validTeams = ["cloud", "devops", "pm", "admin"];
-
-    if (!validRoles.includes(role)) {
+    if (!isRole(role)) {
       return NextResponse.json({ message: "Invalid role" }, { status: 400 });
     }
 
-    if (!validTeams.includes(team)) {
-      return NextResponse.json({ message: "Invalid team" }, { status: 400 });
-    }
-
-    if (role === "admin" ? team !== "admin" : team === "admin") {
+    // Superadmin selalu di tim "superadmin"; admin & user di salah satu tim kerja.
+    if (role === "superadmin" ? team !== SUPERADMIN_TEAM : !isProjectTeam(team)) {
       return NextResponse.json({ message: "Role and team do not match" }, { status: 400 });
     }
 
@@ -69,7 +66,7 @@ export async function PATCH(
       await logAuthEvent({ type: "role_changed", userId, actorId: currentUser.id, ...requestMeta(request.headers, clientIp(request.headers)) });
     }
 
-    const orphaned = before?.role === "staff" && role !== "staff" ? await onUserLeftStaff(userId) : [];
+    const orphaned = worksInProjects(before) && role === "superadmin" ? await onUserLeftProjects(userId) : [];
 
     return NextResponse.json({
       message: "Role updated successfully",

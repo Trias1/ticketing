@@ -33,7 +33,7 @@ const EVENT_LABELS: Record<string, { label: string; tone: Tone }> = {
   login_disabled: { label: "Deactivated account tried", tone: "orange" },
   token_reuse: { label: "Stolen session blocked", tone: "red" },
   password_changed: { label: "Password changed", tone: "blue" },
-  password_reset: { label: "Password reset by admin", tone: "violet" },
+  password_reset: { label: "Password reset by an admin", tone: "violet" },
   email_changed: { label: "Email changed", tone: "blue" },
   user_deactivated: { label: "Account deactivated", tone: "violet" },
   role_changed: { label: "Role changed", tone: "violet" },

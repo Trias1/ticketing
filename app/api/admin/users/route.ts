@@ -3,19 +3,22 @@ import { db } from "db";
 import { users } from "db/schema";
 import { eq } from "drizzle-orm";
 import { revokeSessions } from "lib/auth";
-import { limitUser, requireAdmin } from "lib/api-auth";
+import { limitUser, requirePeopleManager } from "lib/api-auth";
 import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
 import { isUuid, onUserDeactivated, orphanWarning } from "lib/membership";
+import { canManageAccount, isSuperadmin } from "lib/roles";
 
 // =====================
-// GET - Fetch all users
+// GET - Fetch users
 // =====================
+// Superadmin melihat semua akun; admin hanya akun di timnya sendiri.
 export async function GET() {
-  const auth = await requireAdmin();
+  const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
+  const viewer = auth.user;
 
-  const allUsers = await db
+  const query = db
     .select({
       id: users.id,
       name: users.name,
@@ -28,15 +31,18 @@ export async function GET() {
       lastLoginAt: users.lastLoginAt,
     })
     .from(users);
+  const rows = isSuperadmin(viewer) ? await query : await query.where(eq(users.team, viewer.team));
 
-  return NextResponse.json(allUsers);
+  return NextResponse.json(
+    rows.map((u) => ({ ...u, canManage: u.id !== viewer.id && canManageAccount(viewer, u) }))
+  );
 }
 
 // ===========================
 // POST - Toggle Active Status
 // ===========================
 export async function POST(req: Request) {
-  const auth = await requireAdmin();
+  const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
   const currentUser = auth.user;
   const limited = await limitUser(userLimits.adminAction(currentUser.id));
@@ -50,6 +56,12 @@ export async function POST(req: Request) {
 
   if (id === currentUser.id && !isActive) {
     return NextResponse.json({ message: "You can't deactivate your own account" }, { status: 400 });
+  }
+
+  // Akun di luar wewenang dibalas 404, sama seperti akun yang tidak ada.
+  const target = await db.query.users.findFirst({ where: eq(users.id, id), columns: { role: true, team: true } });
+  if (!target || !canManageAccount(currentUser, target)) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
   await db.update(users).set({ isActive }).where(eq(users.id, id));

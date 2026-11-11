@@ -37,7 +37,7 @@ import {
   type Severity,
 } from "./useAdminOverview";
 
-const USERS_HREF = "/dashboard/admin/management-user";
+const USERS_HREF = "/dashboard/superadmin/management-user";
 
 export default function AdminOverview() {
   const { data, error, isLoading, mutate, isValidating } = useAdminOverview();
@@ -65,7 +65,7 @@ export default function AdminOverview() {
             <ButtonLink href={USERS_HREF} variant="default">
               <Users className="h-4 w-4" /> Manage users
             </ButtonLink>
-            <ButtonLink href="/dashboard/admin/register-user">
+            <ButtonLink href="/dashboard/superadmin/register-user">
               <UserPlus className="h-4 w-4" /> New user
             </ButtonLink>
           </div>
@@ -151,10 +151,10 @@ function StatRow({ data, loading }: SectionProps) {
       link: "View status",
     },
     {
-      label: "Admin",
+      label: "Superadmin",
       icon: ShieldCheck,
       value: c?.admins,
-      hint: "Full access to the admin area",
+      hint: "Full access to the administration area",
       href: USERS_HREF,
       link: "Manage roles",
     },
@@ -288,7 +288,7 @@ function FindingRow({ finding }: { finding: SecurityFinding }) {
 }
 
 const TEAM_BAR: Record<string, string> = {
-  admin: "bg-tk-faint",
+  superadmin: "bg-tk-faint",
   cloud: "bg-tk-accent",
   devops: "bg-[#c17d10]",
   pm: "bg-tk-accent",

@@ -8,6 +8,7 @@ import { AlertTriangle, Eye, EyeOff, KeyRound, Upload } from "lucide-react";
 import { Avatar, Badge, Skeleton, TeamBadge } from "components/ui/kit";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
+import { roleLabel } from "lib/roles";
 
 type Profile = {
   id: string;
@@ -314,14 +315,14 @@ function MainSettings({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <span className="mb-1 block text-sm font-semibold">Role</span>
-            <Badge tone={profile.role === "admin" ? "accent" : "neutral"}>{profile.role === "admin" ? "Admin" : "Staff"}</Badge>
+            <Badge tone={profile.role === "user" ? "neutral" : "accent"}>{roleLabel(profile.role)}</Badge>
           </div>
           <div>
             <span className="mb-1 block text-sm font-semibold">Team</span>
             <TeamBadge team={profile.team} />
           </div>
         </div>
-        <p className="text-xs text-tk-muted dark:text-tk-dark-muted">Role and team are managed by an admin.</p>
+        <p className="text-xs text-tk-muted dark:text-tk-dark-muted">Role and team are managed by a superadmin.</p>
         <PrimaryButton busy={busy} disabled={!dirty}>
           Save changes
         </PrimaryButton>
@@ -429,7 +430,7 @@ function PasswordSection({ profile }: { profile: Profile }) {
 
 // Layar khusus saat user wajib membuat password sendiri sebelum bisa memakai aplikasi.
 function RequiredPasswordChange({ profile }: { profile: Profile }) {
-  const home = `/dashboard/${profile.role === "admin" ? "admin" : profile.team}`;
+  const home = `/dashboard/${profile.team}`;
   return (
     <div className="flex min-h-full justify-center bg-tk-bg px-4 py-10 text-tk-text dark:bg-tk-dark-bg dark:text-tk-dark-text">
       <div className="w-full max-w-md">

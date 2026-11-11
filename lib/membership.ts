@@ -64,9 +64,9 @@ export async function onUserDeactivated(userId: string) {
   return handOverOwnership(userId);
 }
 
-// User berhenti jadi staff (mis. diubah jadi admin): keluar dari semua project,
+// User berhenti bekerja di project (diubah jadi superadmin): keluar dari semua project,
 // kecuali project yang tidak punya member aktif lain (supaya tidak jadi project tanpa member).
-export async function onUserLeftStaff(userId: string) {
+export async function onUserLeftProjects(userId: string) {
   const orphaned = await handOverOwnership(userId);
   const keep = orphaned.map((p) => p.id);
   const memberships = await db

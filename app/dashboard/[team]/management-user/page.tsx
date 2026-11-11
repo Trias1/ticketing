@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
+import { ROLES, SUPERADMIN_TEAM, roleLabel } from "lib/roles";
+import { PROJECT_TEAMS } from "lib/team-access";
 import {
   Avatar,
   Badge,
@@ -30,18 +32,21 @@ type User = {
   isActive: boolean;
   lastLoginAt?: string | null;
   avatarUrl?: string | null;
+  // Dari API: boleh dinonaktifkan / direset passwordnya oleh yang sedang melihat.
+  canManage?: boolean;
 };
 
-const ROLES = ["admin", "staff"];
-const TEAMS_BY_ROLE: Record<string, string[]> = {
-  admin: ["admin"],
-  staff: ["cloud", "devops", "pm"],
+const TEAMS_BY_ROLE: Record<string, readonly string[]> = {
+  superadmin: [SUPERADMIN_TEAM],
+  admin: PROJECT_TEAMS,
+  user: PROJECT_TEAMS,
 };
 const ONLINE_WINDOW_MS = 60 * 1000;
+const NOT_MANAGEABLE = "Only a superadmin can manage this account";
 
 const TABS = [
   { key: "all", label: "All", match: (_: User) => true },
-  { key: "admins", label: "Admins", match: (u: User) => u.role === "admin" },
+  { key: "admins", label: "Admins", match: (u: User) => u.role !== "user" },
   { key: "active", label: "Active", match: (u: User) => u.isActive },
   { key: "blocked", label: "Deactivated", match: (u: User) => !u.isActive },
 ] as const;
@@ -55,9 +60,12 @@ const fetcher = async (url: string) => {
 const selectClass =
   "h-8 w-full rounded-md border border-tk-border bg-tk-surface px-2 text-sm text-tk-text focus:border-tk-accent focus:outline-hidden focus:ring-2 focus:ring-tk-accent/20 disabled:opacity-60 dark:border-tk-dark-border dark:bg-tk-dark-surface dark:text-tk-dark-text";
 
+// Dipakai superadmin (semua akun) dan admin tim (akun di timnya; role & tim hanya bisa dilihat).
 export default function ManagementUserPage() {
   const { data: users, error, isLoading, mutate } = useSWR<User[]>("/api/admin/users", fetcher);
-  const { data: me } = useSWR<{ user: { id: string } }>("/api/jwt", fetcher);
+  const { data: me } = useSWR<{ user: { id: string; role: string; team: string } }>("/api/jwt", fetcher);
+  const superadmin = me?.user.role === "superadmin";
+  const myTeam = me?.user.team ?? "";
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
@@ -148,12 +156,14 @@ export default function ManagementUserPage() {
       <div className="mx-auto max-w-7xl space-y-5">
         <div className="flex flex-col gap-4 border-b border-tk-divider pb-5 dark:border-tk-dark-divider sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{superadmin || !me ? "Users" : "Team members"}</h1>
             <p className="mt-1 text-sm text-tk-muted dark:text-tk-dark-muted">
-              Manage roles, teams, and account status. Project access is managed by project owners.
+              {superadmin || !me
+                ? "Manage roles, teams, and account status. Project access is managed by project owners."
+                : `Accounts in the ${TEAM_LABEL[myTeam] ?? myTeam} team. You can reset passwords and deactivate users; roles and teams are managed by a superadmin.`}
             </p>
           </div>
-          <ButtonLink href="/dashboard/admin/register-user">
+          <ButtonLink href={`/dashboard/${myTeam || SUPERADMIN_TEAM}/register-user`}>
             <UserPlus className="h-4 w-4" /> New user
           </ButtonLink>
         </div>
@@ -231,7 +241,7 @@ export default function ManagementUserPage() {
                               <div className="flex items-center gap-2">
                                 <span className="truncate font-medium">{u.name}</span>
                                 {isMe && <Badge tone="accent">You</Badge>}
-                                {u.role === "admin" && <Badge>Admin</Badge>}
+                                {u.role !== "user" && <Badge>{roleLabel(u.role)}</Badge>}
                               </div>
                               <div className="truncate text-xs text-tk-muted dark:text-tk-dark-muted">{u.email}</div>
                             </div>
@@ -239,26 +249,38 @@ export default function ManagementUserPage() {
                         </td>
 
                         <td className="px-4 py-3">
+                          {superadmin ? (
                           <select
                             aria-label={`Role ${u.name}`}
                             disabled={busy || isMe}
                             title={isMe ? "You can't change your own role" : undefined}
                             value={u.role}
-                            onChange={(e) => updateRole(u, e.target.value, TEAMS_BY_ROLE[e.target.value][0])}
+                            onChange={(e) =>
+                              updateRole(
+                                u,
+                                e.target.value,
+                                // Pindah antara admin & user: tim tetap. Ke/dari superadmin: tim ikut berubah.
+                                TEAMS_BY_ROLE[e.target.value].includes(u.team) ? u.team : TEAMS_BY_ROLE[e.target.value][0]
+                              )
+                            }
                             className={selectClass}
                           >
                             {ROLES.map((r) => (
                               <option key={r} value={r}>
-                                {r === "admin" ? "Admin" : "Staff"}
+                                {roleLabel(r)}
                               </option>
                             ))}
                           </select>
+                          ) : (
+                            <span className="text-sm">{roleLabel(u.role)}</span>
+                          )}
                         </td>
 
                         <td className="px-4 py-3">
+                          {superadmin ? (
                           <select
                             aria-label={`Team ${u.name}`}
-                            disabled={busy || u.role === "admin"}
+                            disabled={busy || u.role === "superadmin"}
                             value={u.team}
                             onChange={(e) => updateRole(u, u.role, e.target.value)}
                             className={selectClass}
@@ -269,6 +291,9 @@ export default function ManagementUserPage() {
                               </option>
                             ))}
                           </select>
+                          ) : (
+                            <span className="text-sm">{TEAM_LABEL[u.team] ?? u.team}</span>
+                          )}
                         </td>
 
                         <td className="px-4 py-3">
@@ -288,8 +313,8 @@ export default function ManagementUserPage() {
                           <div className="flex justify-end gap-2">
                           <button
                             type="button"
-                            disabled={busy || isMe}
-                            title={isMe ? "Use Edit profile to change your own password" : "Reset password"}
+                            disabled={busy || isMe || !u.canManage}
+                            title={isMe ? "Use Edit profile to change your own password" : !u.canManage ? NOT_MANAGEABLE : "Reset password"}
                             aria-label={`Reset password for ${u.name}`}
                             onClick={() => setResetUser(u)}
                             className="inline-flex h-8 items-center gap-1.5 rounded-md border border-tk-border px-3 text-sm font-medium text-tk-text transition-colors hover:bg-tk-subtle disabled:cursor-not-allowed disabled:opacity-50 dark:border-tk-dark-border dark:text-tk-dark-text dark:hover:bg-tk-dark-subtle"
@@ -299,8 +324,8 @@ export default function ManagementUserPage() {
                           </button>
                           <button
                             type="button"
-                            disabled={busy || isMe}
-                            title={isMe ? "You can't deactivate your own account" : undefined}
+                            disabled={busy || isMe || !u.canManage}
+                            title={isMe ? "You can't deactivate your own account" : !u.canManage ? NOT_MANAGEABLE : undefined}
                             onClick={() => (u.isActive ? setConfirmUser(u) : toggleStatus(u))}
                             className={clsx(
                               "inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminOverview from "components/admin/AdminOverview";
 import StaffDashboard from "components/staff/StaffDashboard";
+import { isSuperadmin } from "lib/roles";
 
 type User = {
   id: string;
@@ -28,10 +29,9 @@ export default function DashboardContent({ team }: { team: string }) {
 
       const { user } = await res.json();
 
-      // Admin hanya punya area administrasi; staff punya dashboard di tim mereka.
-      const home = user.role === "admin" ? "admin" : user.team;
-      if (team !== home) {
-        router.replace(`/dashboard/${home}`);
+      // Superadmin hanya punya area administrasi (timnya "superadmin"); admin & user punya dashboard di tim mereka.
+      if (team !== user.team) {
+        router.replace(`/dashboard/${user.team}`);
         return;
       }
 
@@ -44,9 +44,7 @@ export default function DashboardContent({ team }: { team: string }) {
 
   if (loading || !user) return null;
 
-  const isAdmin = user.role === "admin";
-
-  if (isAdmin && team === "admin") return <AdminOverview />;
+  if (isSuperadmin(user)) return <AdminOverview />;
 
   return <StaffDashboard homeTeam={user.team} userName={user.name.split(" ")[0]} />;
 }

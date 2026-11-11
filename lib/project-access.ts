@@ -4,6 +4,7 @@ import { db } from "db";
 import { projectMembers, projects } from "db/schema";
 import { requireUser } from "lib/api-auth";
 import { isUuid } from "lib/membership";
+import { worksInProjects } from "lib/roles";
 
 export type ProjectRole = "owner" | "member";
 
@@ -34,8 +35,8 @@ export async function requireProjectAccess(
 ): Promise<AccessResult> {
   const auth = await requireUser();
   if (auth.error) return { error: auth.error, user: null, project: null, role: null };
-  // Admin hanya mengurus anggota & keamanan; project hanya untuk staff.
-  if (auth.user.role !== "staff") return fail("Project not found", 404);
+  // Superadmin hanya mengurus akun & keamanan; sesuai SOP tidak pernah melihat project.
+  if (!worksInProjects(auth.user)) return fail("Project not found", 404);
   if (!isUuid(projectId)) return fail("Project not found", 404);
 
   const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });

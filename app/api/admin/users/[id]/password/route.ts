@@ -3,11 +3,12 @@ import { randomInt } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "db";
 import { users } from "db/schema";
-import { limitUser, requireAdmin } from "lib/api-auth";
+import { limitUser, requirePeopleManager } from "lib/api-auth";
 import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
 import { hashPassword, newPasswordProblem, revokeSessions } from "lib/auth";
 import { isUuid } from "lib/membership";
+import { canManageAccount } from "lib/roles";
 
 // Huruf kecil + angka tanpa karakter yang mirip (0/o, 1/l/i), dikelompokkan per 4: mudah diketik & dibacakan.
 const CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -17,10 +18,10 @@ function temporaryPassword() {
   return [group(), group(), group()].join("-");
 }
 
-// Admin mereset password user lain. Password sementara hanya dikembalikan sekali di respons ini.
+// Superadmin (semua akun) atau admin (user di timnya) mereset password akun lain. Password sementara hanya dikembalikan sekali di respons ini.
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const auth = await requireAdmin();
+  const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
   const limited = await limitUser(userLimits.adminAction(auth.user.id));
   if (limited) return limited;
@@ -35,12 +36,20 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     );
   }
 
-  // Admin boleh menentukan password sendiri; kalau kosong dibuatkan otomatis.
+  // Akun di luar wewenang (admin hanya untuk user di timnya) dibalas 404, sama seperti akun yang tidak ada.
+  const target = await db.query.users.findFirst({
+    where: eq(users.id, params.id),
+    columns: { email: true, name: true, role: true, team: true },
+  });
+  if (!target || !canManageAccount(auth.user, target)) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  // Boleh menentukan password sendiri; kalau kosong dibuatkan otomatis.
   const body = await req.json().catch(() => ({}));
   const custom = typeof body?.password === "string" ? body.password.trim() : "";
   if (custom) {
-    const target = await db.query.users.findFirst({ where: eq(users.id, params.id), columns: { email: true, name: true } });
-    const problem = await newPasswordProblem(custom, { email: target?.email, name: target?.name });
+    const problem = await newPasswordProblem(custom, { email: target.email, name: target.name });
     if (problem) return NextResponse.json({ message: problem }, { status: 400 });
   }
 

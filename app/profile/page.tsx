@@ -11,8 +11,7 @@ export default function LegacyProfileRedirect() {
     fetch("/api/jwt", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then(({ user }) => {
-        const team = user.role === "admin" ? "admin" : user.team;
-        router.replace(`/dashboard/${team}/profile`);
+        router.replace(`/dashboard/${user.team}/profile`);
       })
       .catch(() => router.replace("/login"));
   }, [router]);

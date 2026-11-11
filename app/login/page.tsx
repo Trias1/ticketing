@@ -6,12 +6,12 @@ import clsx from "clsx";
 import { useTheme } from "components/theme-provider";
 import { AlertTriangle, Eye, EyeOff, Loader2, Moon, Sun } from "lucide-react";
 import { BrandMark } from "components/ui/kit";
-
-const TEAMS = ["cloud", "devops", "pm"];
+import { SUPERADMIN_HOME, isSuperadmin } from "lib/roles";
+import { isProjectTeam } from "lib/team-access";
 
 function dashboardFor(user: { role?: string; team?: string }) {
-  if (user.role === "admin") return "/dashboard/admin";
-  return TEAMS.includes(user.team ?? "") ? `/dashboard/${user.team}` : "/";
+  if (isSuperadmin(user)) return SUPERADMIN_HOME;
+  return isProjectTeam(user.team) ? `/dashboard/${user.team}` : "/";
 }
 
 const inputClass =

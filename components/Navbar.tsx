@@ -8,6 +8,7 @@ import { ChevronRight, Moon, Sun } from "lucide-react";
 import UserMenu from "components/ui/UserMenu";
 import { PROFILE_UPDATED_EVENT } from "components/profile/ProfileSettings";
 import { useCurrentProject } from "components/staff/hooks";
+import { SUPERADMIN_HOME, isSuperadmin } from "lib/roles";
 
 type CurrentUser = {
   name?: string;
@@ -24,7 +25,12 @@ const ADMIN_PAGES: Record<string, string> = {
   "register-user": "New user",
   security: "Account security",
   profile: "Edit profile",
-  statistik: "Statistics",
+};
+
+// Halaman akun tim (khusus admin tim).
+const TEAM_ADMIN_PAGES: Record<string, string> = {
+  "management-user": "Team members",
+  "register-user": "New user",
 };
 
 const PROJECT_PAGES: Record<string, string> = {
@@ -35,7 +41,7 @@ const PROJECT_PAGES: Record<string, string> = {
 };
 
 function adminCrumbs(pathname: string): Crumb[] {
-  const crumbs: Crumb[] = [{ label: "Administration", href: "/dashboard/admin" }];
+  const crumbs: Crumb[] = [{ label: "Administration", href: SUPERADMIN_HOME }];
   const page = pathname.split("/")[3];
   if (page && ADMIN_PAGES[page]) crumbs.push({ label: ADMIN_PAGES[page], href: pathname });
   return crumbs;
@@ -48,6 +54,7 @@ function staffCrumbs(pathname: string, projectName: string | null): Crumb[] {
   if (!section) return [{ label: "Dashboard", href: home }];
   if (section === "issues") return [{ label: "My issues", href: `${home}/issues` }];
   if (section === "profile") return [{ label: "Edit profile", href: `${home}/profile` }];
+  if (TEAM_ADMIN_PAGES[section]) return [{ label: TEAM_ADMIN_PAGES[section], href: `${home}/${section}` }];
   if (section !== "project") return [{ label: "Dashboard", href: home }];
 
   const crumbs: Crumb[] = [{ label: "Projects", href: `${home}/project` }];
@@ -104,9 +111,9 @@ export default function Navbar() {
   };
 
   // Sebelum data user termuat, tebak dari URL.
-  const isAdmin = user ? user.role === "admin" : pathname.startsWith("/dashboard/admin");
-  const crumbs = isAdmin ? adminCrumbs(pathname) : staffCrumbs(pathname, project?.name ?? null);
-  const profileHref = isAdmin ? "/dashboard/admin/profile" : `/dashboard/${user?.team ?? pathname.split("/")[2]}/profile`;
+  const superadmin = user ? isSuperadmin(user) : pathname.startsWith(SUPERADMIN_HOME);
+  const crumbs = superadmin ? adminCrumbs(pathname) : staffCrumbs(pathname, project?.name ?? null);
+  const profileHref = `/dashboard/${user?.team ?? pathname.split("/")[2]}/profile`;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-tk-border bg-tk-surface/95 px-4 backdrop-blur-sm dark:border-tk-dark-border dark:bg-tk-dark-surface/95 sm:px-6">

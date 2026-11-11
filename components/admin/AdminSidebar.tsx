@@ -24,20 +24,20 @@ const sections: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
     items: [
-      { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard, exact: true },
+      { name: "Dashboard", href: "/dashboard/superadmin", icon: LayoutDashboard, exact: true },
     ],
   },
   {
     title: "Members",
     items: [
-      { name: "Users", href: "/dashboard/admin/management-user", icon: Users },
-      { name: "New user", href: "/dashboard/admin/register-user", icon: UserPlus },
+      { name: "Users", href: "/dashboard/superadmin/management-user", icon: Users },
+      { name: "New user", href: "/dashboard/superadmin/register-user", icon: UserPlus },
     ],
   },
   {
     title: "Security",
     items: [
-      { name: "Account security", href: "/dashboard/admin/security", icon: ShieldCheck },
+      { name: "Account security", href: "/dashboard/superadmin/security", icon: ShieldCheck },
     ],
   },
 ];
@@ -65,7 +65,7 @@ export default function AdminSidebar({ isOpen, onToggle }: Props) {
       {/* Brand */}
       <div className={clsx("flex h-14 items-center gap-2 px-3", !isOpen && "justify-center px-2")}>
         <Link
-          href="/dashboard/admin"
+          href="/dashboard/superadmin"
           className="flex min-w-0 items-center gap-2 rounded-md p-1 hover:bg-black/5 dark:hover:bg-white/5"
           title="Administration"
         >

@@ -32,12 +32,12 @@ const STAFF_FEATURES = [
 
 const ADMIN_FEATURES = [
   {
-    title: "Members",
-    body: "Create accounts, change roles and teams, deactivate people, and reset a password with a one-time temporary one.",
+    title: "Team admins",
+    body: "Each team's admin creates the team's user accounts, resets their passwords and deactivates them, and works in projects like everyone else.",
   },
   {
-    title: "Security overview",
-    body: "Dormant and never-used accounts, admin accounts, and a sign-in log with IP address and device.",
+    title: "Superadmins",
+    body: "Manage every account, role and team, with dormant-account checks and a sign-in log with IP address and device. They never see projects or issues.",
   },
 ];
 
@@ -53,7 +53,7 @@ const SETUP = [
   { text: "Clone the repository and install dependencies.", code: `git clone ${REPO_URL}.git\ncd ticketing\nnpm install` },
   { text: "Copy .env.example to .env.local and fill in your Neon URL, a JWT secret and Cloudinary keys.", code: "cp .env.example .env.local" },
   {
-    text: "Create the tables and the first admin account.",
+    text: "Create the tables and the first superadmin account.",
     code: "npx drizzle-kit push\nSEED_ADMIN_EMAIL=you@yourcompany.com SEED_ADMIN_PASSWORD=... npx tsx scripts/seed-user.ts",
   },
   { text: "Start the app and sign in.", code: "npm run dev" },
@@ -129,7 +129,7 @@ export default function HomePage() {
         <section className="border-t border-tk-border dark:border-tk-dark-border">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[16rem_1fr]">
             <div>
-              <h2 className={sectionHeading}>For staff</h2>
+              <h2 className={sectionHeading}>For the people doing the work</h2>
               <p className={`mt-2 text-sm leading-relaxed ${muted}`}>Everything for working through issues together.</p>
             </div>
             <FeatureList items={STAFF_FEATURES} />
@@ -139,9 +139,9 @@ export default function HomePage() {
         <section className="border-t border-tk-border dark:border-tk-dark-border">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[16rem_1fr]">
             <div>
-              <h2 className={sectionHeading}>For admins</h2>
+              <h2 className={sectionHeading}>Accounts and roles</h2>
               <p className={`mt-2 text-sm leading-relaxed ${muted}`}>
-                Admins look after people and accounts. They don&apos;t work on issues.
+                No self sign-up: accounts are created from the top down, so a team only sees its own work.
               </p>
             </div>
             <FeatureList items={ADMIN_FEATURES} />

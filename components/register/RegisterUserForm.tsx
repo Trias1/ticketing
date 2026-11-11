@@ -5,22 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { toast } from "sonner";
-import { AlertTriangle, Eye, EyeOff, KeyRound, ShieldCheck, User } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, KeyRound, ShieldCheck, User, UsersRound } from "lucide-react";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
+import { SUPERADMIN_TEAM, type Role } from "lib/roles";
+import { TEAM_LABEL } from "components/ui/kit";
 
-type Role = "admin" | "staff";
-type Team = "admin" | "cloud" | "devops" | "pm";
+type Team = typeof SUPERADMIN_TEAM | "cloud" | "devops" | "pm";
 
-const STAFF_TEAMS: { value: Team; label: string; hint: string }[] = [
+const WORK_TEAMS: { value: Team; label: string; hint: string }[] = [
   { value: "cloud", label: "Cloud", hint: "Cloud team workspace" },
   { value: "devops", label: "DevOps", hint: "DevOps team workspace" },
   { value: "pm", label: "Project Manager", hint: "Project management team workspace" },
 ];
 
 const ROLE_OPTIONS: { value: Role; label: string; hint: string; icon: typeof User }[] = [
-  { value: "staff", label: "Staff", hint: "Works in their team workspace: projects and tickets.", icon: User },
-  { value: "admin", label: "Admin", hint: "Manages members and security. Does not handle tickets.", icon: ShieldCheck },
+  { value: "user", label: "User", hint: "Works on issues in the projects they belong to.", icon: User },
+  { value: "admin", label: "Admin", hint: "Works in projects and manages the user accounts of their own team.", icon: UsersRound },
+  { value: "superadmin", label: "Superadmin", hint: "Manages every account, security and monitoring. Never sees projects or issues.", icon: ShieldCheck },
 ];
 
 const inputClass =
@@ -72,21 +74,25 @@ function Section({ title, description, children }: { title: string; description:
   );
 }
 
-export default function RegisterUserForm() {
+// viewer = yang sedang membuat akun. Superadmin memilih role & tim; admin selalu membuat user di timnya sendiri.
+export default function RegisterUserForm({ viewer }: { viewer: { role: string; team: string } }) {
   const router = useRouter();
+  const superadmin = viewer.role === "superadmin";
+  const listHref = `/dashboard/${viewer.team}/management-user`;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<Role>("staff");
-  const [team, setTeam] = useState<Team>("cloud");
+  const [role, setRole] = useState<Role>("user");
+  const [team, setTeam] = useState<Team>(superadmin ? "cloud" : (viewer.team as Team));
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const chooseRole = (next: Role) => {
     setRole(next);
-    setTeam(next === "admin" ? "admin" : "cloud");
+    if (next === "superadmin") setTeam(SUPERADMIN_TEAM);
+    else if (team === SUPERADMIN_TEAM) setTeam("cloud");
   };
 
   const chooseTeam = (next: Team) => {
@@ -124,7 +130,7 @@ export default function RegisterUserForm() {
       }
 
       toast.success(`User ${name} created`);
-      router.replace("/dashboard/admin/management-user");
+      router.replace(listHref);
     } catch {
       setMessage("Something went wrong while creating the user");
     } finally {
@@ -219,10 +225,11 @@ export default function RegisterUserForm() {
             </Field>
           </Section>
 
-          <Section title="Access" description="The role decides what the user can do. Staff work inside their team workspace.">
+          {superadmin ? (
+          <Section title="Access" description="The role decides what the account can do. Admins and users work inside a team.">
             <fieldset>
               <legend className="mb-2 text-sm font-semibold">Role</legend>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 {ROLE_OPTIONS.map((opt) => {
                   const Icon = opt.icon;
                   const selected = role === opt.value;
@@ -256,7 +263,7 @@ export default function RegisterUserForm() {
               </div>
             </fieldset>
 
-            {role === "staff" ? (
+            {role !== "superadmin" ? (
               <Field label="Team" htmlFor="team">
                 <select
                   id="team"
@@ -264,22 +271,31 @@ export default function RegisterUserForm() {
                   onChange={(e) => chooseTeam(e.target.value as Team)}
                   className={inputClass}
                 >
-                  {STAFF_TEAMS.map((t) => (
+                  {WORK_TEAMS.map((t) => (
                     <option key={t.value} value={t.value}>
                       {t.label}
                     </option>
                   ))}
                 </select>
                 <p className="mt-1 text-xs text-tk-muted dark:text-tk-dark-muted">
-                  {STAFF_TEAMS.find((t) => t.value === team)?.hint}
+                  {WORK_TEAMS.find((t) => t.value === team)?.hint}
                 </p>
               </Field>
             ) : (
               <p className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
-                Admins are automatically placed in the <span className="font-semibold">Admin</span> team.
+                Superadmins are placed in the <span className="font-semibold">Superadmin</span> team and don&apos;t join projects.
               </p>
             )}
           </Section>
+          ) : (
+            <Section title="Access" description="Accounts you create join your team.">
+              <p className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
+                This account will be a <span className="font-semibold">User</span> in the{" "}
+                <span className="font-semibold">{TEAM_LABEL[viewer.team] ?? viewer.team}</span> team. Project owners add
+                users to their projects.
+              </p>
+            </Section>
+          )}
 
           <div className="flex items-center gap-2 border-t border-tk-divider py-5 dark:border-tk-dark-divider">
             <button
@@ -290,7 +306,7 @@ export default function RegisterUserForm() {
               {submitting ? "Creating user..." : "Create user"}
             </button>
             <Link
-              href="/dashboard/admin/management-user"
+              href={listHref}
               className="inline-flex h-9 items-center rounded-md border border-tk-border px-4 text-sm font-medium hover:bg-tk-subtle dark:border-tk-dark-border dark:hover:bg-tk-dark-subtle"
             >
               Cancel

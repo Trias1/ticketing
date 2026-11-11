@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import ProjectForm from "components/staff/ProjectForm";
 import { getCurrentUser } from "lib/auth";
+import { SUPERADMIN_HOME, worksInProjects } from "lib/roles";
 
 export default async function NewProjectPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "admin") redirect("/dashboard/admin");
+  if (!worksInProjects(user)) redirect(SUPERADMIN_HOME);
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">

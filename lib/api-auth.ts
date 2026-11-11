@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "lib/auth";
 import { consume, tooManyAttempts, type Limit } from "lib/rate-limit";
+import { isSuperadmin, managesPeople } from "lib/roles";
 
 type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
@@ -30,18 +31,24 @@ export async function requireUser(): Promise<AuthResult> {
   return { user, error: null };
 }
 
-// Pakai di API route khusus admin.
-export async function requireAdmin(): Promise<AuthResult> {
+const forbidden = (): AuthResult => ({
+  user: null,
+  error: NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 }),
+});
+
+// API khusus superadmin (monitoring, log keamanan, ubah role/tim).
+export async function requireSuperadmin(): Promise<AuthResult> {
   const result = await requireUser();
   if (result.error) return result;
+  return isSuperadmin(result.user) ? result : forbidden();
+}
 
-  if (result.user.role !== "admin") {
-    return {
-      user: null,
-      error: NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 }),
-    };
-  }
-  return result;
+// API pengelolaan akun: superadmin untuk semua akun, admin hanya untuk user di timnya.
+// Batas per akun target dicek di route dengan canManageAccount.
+export async function requirePeopleManager(): Promise<AuthResult> {
+  const result = await requireUser();
+  if (result.error) return result;
+  return managesPeople(result.user) ? result : forbidden();
 }
 
 // Batas per user untuk aksi yang mahal/mudah di-spam. null = boleh lanjut.

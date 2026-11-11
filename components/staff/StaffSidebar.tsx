@@ -14,14 +14,16 @@ import {
   Settings,
   Tag,
   Ticket,
+  UserPlus,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { ProjectAvatar } from "components/ui/kit";
 import JumpTo from "./JumpTo";
 import ProjectSwitcher from "./ProjectSwitcher";
 import { projectBase, rememberProject, useCurrentProject, useMyProjects } from "./hooks";
 
-type Props = { isOpen: boolean; onToggle: () => void; homeTeam: string };
+type Props = { isOpen: boolean; onToggle: () => void; homeTeam: string; teamAdmin?: boolean };
 
 function NavLink({
   href,
@@ -72,7 +74,7 @@ function SectionTitle({ children, collapsed }: { children: React.ReactNode; coll
   return <p className="truncate px-3 pb-1 pt-4 text-xs font-semibold text-tk-faint">{children}</p>;
 }
 
-export default function StaffSidebar({ isOpen, onToggle, homeTeam }: Props) {
+export default function StaffSidebar({ isOpen, onToggle, homeTeam, teamAdmin = false }: Props) {
   const pathname = usePathname();
   const collapsed = !isOpen;
   const { data: projects = [] } = useMyProjects();
@@ -153,6 +155,28 @@ export default function StaffSidebar({ isOpen, onToggle, homeTeam }: Props) {
             collapsed={collapsed}
           />
         </div>
+
+        {teamAdmin && (
+          <>
+            <SectionTitle collapsed={collapsed}>Your team</SectionTitle>
+            <div className="space-y-0.5">
+              <NavLink
+                href={`${home}/management-user`}
+                icon={UsersRound}
+                label="Team members"
+                active={pathname === `${home}/management-user`}
+                collapsed={collapsed}
+              />
+              <NavLink
+                href={`${home}/register-user`}
+                icon={UserPlus}
+                label="New user"
+                active={pathname === `${home}/register-user`}
+                collapsed={collapsed}
+              />
+            </div>
+          </>
+        )}
 
         {starred.length > 0 && (
           <>

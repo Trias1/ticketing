@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "db";
 import { users } from "db/schema";
 import { desc } from "drizzle-orm";
-import { requireAdmin } from "lib/api-auth";
+import { requireSuperadmin } from "lib/api-auth";
+import { SUPERADMIN_TEAM, isSuperadmin } from "lib/roles";
+import { PROJECT_TEAMS } from "lib/team-access";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +12,10 @@ export const dynamic = "force-dynamic";
 const ONLINE_WINDOW_MS = 60 * 1000;
 // Akun aktif yang tidak login selama ini dianggap "dormant".
 const DORMANT_DAYS = 30;
-const TEAMS = ["admin", "cloud", "devops", "pm"] as const;
+const TEAMS = [SUPERADMIN_TEAM, ...PROJECT_TEAMS];
 
 export async function GET() {
-  const auth = await requireAdmin();
+  const auth = await requireSuperadmin();
   if (auth.error) return auth.error;
 
   try {
@@ -43,7 +45,8 @@ export async function GET() {
 
     const active = all.filter((u) => u.isActive);
     const blocked = all.filter((u) => !u.isActive);
-    const admins = all.filter((u) => u.role === "admin");
+    // "admins" di respons = superadmin: mereka yang bisa mengubah role & menonaktifkan siapa pun.
+    const admins = all.filter(isSuperadmin);
     const neverLoggedIn = active.filter((u) => !u.lastLoginAt);
     const dormant = active.filter(
       (u) => u.lastLoginAt && new Date(u.lastLoginAt).getTime() < dormantBefore
@@ -62,8 +65,8 @@ export async function GET() {
       admins.length > 3 && {
         id: "admins",
         severity: "medium",
-        title: `${admins.length} accounts have the admin role`,
-        description: "Keep admins to a minimum. Every admin can change roles and deactivate other users.",
+        title: `${admins.length} accounts have the superadmin role`,
+        description: "Keep superadmins to a minimum. Every superadmin can change roles and deactivate any account.",
         users: admins,
       },
       dormant.length > 0 && {

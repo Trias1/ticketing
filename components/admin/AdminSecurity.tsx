@@ -23,11 +23,11 @@ export default function AdminSecurity() {
           <SecurityPanel data={data} loading={isLoading} />
           <div className="space-y-6">
             <UserList
-              title="Admin accounts"
+              title="Superadmin accounts"
               users={data?.admins}
               loading={isLoading}
               meta={(u) => (u.online ? "Online now" : `Signed in ${timeAgo(u.lastLoginAt).toLowerCase()}`)}
-              action={<TextLink href="/dashboard/admin/management-user">Manage roles</TextLink>}
+              action={<TextLink href="/dashboard/superadmin/management-user">Manage roles</TextLink>}
               emptyIcon={ShieldCheck}
               emptyTitle="No admins yet"
             />

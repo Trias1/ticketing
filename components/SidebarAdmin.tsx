@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import AdminSidebar from "components/admin/AdminSidebar";
 import StaffSidebar from "components/staff/StaffSidebar";
 import { PROFILE_UPDATED_EVENT } from "components/profile/ProfileSettings";
+import { isSuperadmin, isTeamAdmin } from "lib/roles";
 
 type User = {
   role: string;
   team?: string;
 };
 
-// Pilih sidebar sesuai role: admin mengelola anggota, staff bekerja di project.
+// Pilih sidebar sesuai role: superadmin mengelola akun, admin & user bekerja di project.
 export default function Sidebar({ onToggleWidth }: { onToggleWidth?: (collapsed: boolean) => void }) {
   const [isOpen, setIsOpen] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +43,6 @@ export default function Sidebar({ onToggleWidth }: { onToggleWidth?: (collapsed:
 
   const toggle = () => setIsOpen((open) => !open);
 
-  if (user.role === "admin") return <AdminSidebar isOpen={isOpen} onToggle={toggle} />;
-  return <StaffSidebar isOpen={isOpen} onToggle={toggle} homeTeam={user.team ?? "cloud"} />;
+  if (isSuperadmin(user)) return <AdminSidebar isOpen={isOpen} onToggle={toggle} />;
+  return <StaffSidebar isOpen={isOpen} onToggle={toggle} homeTeam={user.team ?? "cloud"} teamAdmin={isTeamAdmin(user)} />;
 }

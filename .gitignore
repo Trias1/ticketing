@@ -48,3 +48,6 @@ structure.txt
 
 # folder tes sementara
 _qa
+
+# smoke test lokal
+.role-smoke*

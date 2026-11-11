@@ -99,14 +99,14 @@ export const TEAM_TONE: Record<string, BadgeTone> = {
   cloud: "blue",
   devops: "orange",
   pm: "violet",
-  admin: "neutral",
+  superadmin: "neutral",
 };
 
 export const TEAM_LABEL: Record<string, string> = {
   cloud: "Cloud",
   devops: "DevOps",
   pm: "PM",
-  admin: "Admin",
+  superadmin: "Superadmin",
 };
 
 export function TeamBadge({ team }: { team: string }) {

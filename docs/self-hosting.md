@@ -55,7 +55,9 @@ This creates every table from `db/schema.ts` in the database `DATABASE_URL` poin
 
 The SQL files in `drizzle/` are the history of the original deployment. You don't need them for a new database.
 
-## 4. Create the first admin
+## 4. Create the first superadmin
+
+The script creates a **superadmin** account. Superadmins manage every account and the security log but never see projects or issues; see [roles](user-guide.md#roles).
 
 Pick your own long, unique password. It must follow the [password rules](user-guide.md#setting-your-own-password) and can't contain the word "admin".
 
@@ -69,7 +71,7 @@ On Windows PowerShell:
 $env:SEED_ADMIN_EMAIL="you@yourcompany.com"; $env:SEED_ADMIN_PASSWORD="your-own-passphrase"; npx tsx scripts/seed-user.ts
 ```
 
-The script does nothing if the email already exists. Don't use an `@example.com` address: the admin dashboard flags those as leftover test accounts.
+The script does nothing if the email already exists. Don't use an `@example.com` address: the superadmin dashboard flags those as leftover test accounts.
 
 ## 5. Run it
 
@@ -79,7 +81,7 @@ For development:
 npm run dev
 ```
 
-Open http://localhost:3000 and sign in with the admin account. Then create accounts for your team under **New user**.
+Open http://localhost:3000 and sign in with the superadmin account. Under **New user**, create an **admin** for each team; admins then create the users of their own team.
 
 ## Deploying
 
@@ -130,20 +132,19 @@ npm run start
 
 4. Build and restart, or push to deploy on Vercel.
 
+### Upgrading to three roles (superadmin, admin, user)
+
+Installs from before this change have two roles, `admin` and `staff`. Run [`drizzle/0023_three_roles.sql`](../drizzle/0023_three_roles.sql) in the Neon SQL editor, as one transaction, right when you deploy the new code. It turns every `admin` into a `superadmin` and every `staff` into a `user`, and signs everyone out once, because their old sessions carry the old role. Try it on a Neon branch first.
+
 ## Known limitations
 
-- **Teams are fixed to Cloud, DevOps and PM.** Adding or renaming a team needs code changes. Without them, staff in a new team get stuck in a redirect loop. The lists are in:
-  - `lib/team-access.ts` (`PROJECT_TEAMS`)
-  - `proxy.ts` (the team check for dashboard URLs)
-  - `app/login/page.tsx` (`TEAMS`)
-  - `app/api/admin/overview/route.ts` (`TEAMS`)
-  - `app/api/admin/users/[id]/role/route.ts` (`validTeams`)
-  - `app/dashboard/[team]/management-user/page.tsx` (`TEAMS_BY_ROLE`)
-  - `components/register/RegisterUserForm.tsx` (`STAFF_TEAMS`)
-  - `components/ui/kit.tsx` and `components/admin/AdminOverview.tsx` (team names and colors)
+- **Teams are fixed to Cloud, DevOps and PM.** Adding or renaming a team needs code changes:
+  - `lib/team-access.ts` (`PROJECT_TEAMS`): the list used for access checks, account management and the dashboard
+  - `components/register/RegisterUserForm.tsx` (`WORK_TEAMS`): team names and hints in the New user form
+  - `components/ui/kit.tsx` and `components/admin/AdminOverview.tsx`: team labels and colors
 - **Neon only.** The database driver is `@neondatabase/serverless` over HTTP.
 - **Cloudinary only** for uploads. Using another image host means changing the upload routes, the `img-src` rule of the Content Security Policy in `next.config.js`, and the allowed avatar URLs in `app/api/profileusers/route.ts`.
-- **No self sign-up and no email.** Admins create accounts and reset passwords; nothing is sent by email.
+- **No self sign-up and no email.** Superadmins and team admins create accounts and reset passwords; nothing is sent by email.
 - **Images in Markdown must be uploaded.** The Content Security Policy blocks images from other websites.
 
 ## Links on the home page

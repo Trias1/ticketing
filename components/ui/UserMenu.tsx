@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { ChevronDown, LogOut, ShieldCheck, User } from "lucide-react";
 import { Avatar, Badge, TEAM_LABEL } from "./kit";
+import { SUPERADMIN_HOME, isSuperadmin, isTeamAdmin } from "lib/roles";
 
 type MenuUser = {
   name?: string;
@@ -33,7 +34,7 @@ export default function UserMenu({ user, profileHref, onSignOut }: Props) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const isAdmin = user?.role === "admin";
+  const superadmin = isSuperadmin(user);
 
   const items = () => Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
 
@@ -136,10 +137,13 @@ export default function UserMenu({ user, profileHref, onSignOut }: Props) {
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-semibold text-tk-text dark:text-tk-dark-text">{user?.name ?? "Account"}</p>
                 {user?.role &&
-                  (isAdmin ? (
-                    <Badge tone="accent">Admin</Badge>
+                  (superadmin ? (
+                    <Badge tone="accent">Superadmin</Badge>
                   ) : (
-                    <Badge>{TEAM_LABEL[user.team ?? ""] ?? "Staff"}</Badge>
+                    <>
+                      {isTeamAdmin(user) && <Badge tone="accent">Admin</Badge>}
+                      <Badge>{TEAM_LABEL[user.team ?? ""] ?? user.team}</Badge>
+                    </>
                   ))}
               </div>
               <p className="truncate text-xs text-tk-muted dark:text-tk-dark-muted">{user?.email}</p>
@@ -150,9 +154,9 @@ export default function UserMenu({ user, profileHref, onSignOut }: Props) {
             <Link href={profileHref} role="menuitem" tabIndex={-1} onClick={() => close()} className={itemClass}>
               <User className="h-4 w-4 text-tk-muted dark:text-tk-dark-muted" /> Edit profile
             </Link>
-            {isAdmin && (
+            {superadmin && (
               <Link
-                href="/dashboard/admin/security"
+                href={`${SUPERADMIN_HOME}/security`}
                 role="menuitem"
                 tabIndex={-1}
                 onClick={() => close()}

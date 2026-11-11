@@ -13,7 +13,7 @@ export function isProjectTeam(team: string | null | undefined): team is ProjectT
 }
 
 export function getAllowedProjectTeams(user: TeamUser): ProjectTeam[] {
-  if (user.role === "admin") return [...PROJECT_TEAMS];
+  if (user.role === "superadmin") return [...PROJECT_TEAMS];
 
   const ownTeam = isProjectTeam(user.team) ? [user.team] : [];
   const accessTeams = user.access?.filter(isProjectTeam) ?? [];
@@ -21,9 +21,9 @@ export function getAllowedProjectTeams(user: TeamUser): ProjectTeam[] {
   return [...new Set([...ownTeam, ...accessTeams])];
 }
 
-// Staff membuat project di timnya sendiri; akses lintas tim diatur lewat member project.
+// Admin & user membuat project di timnya sendiri; akses lintas tim diatur lewat member project.
 export function getCreatableProjectTeams(user: TeamUser): ProjectTeam[] {
-  if (user.role === "admin") return [];
+  if (user.role === "superadmin") return [];
   return isProjectTeam(user.team) ? [user.team] : [];
 }
 

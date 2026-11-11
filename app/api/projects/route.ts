@@ -6,6 +6,7 @@ import { projectLabels, projectMembers, projects, ticketStatuses } from "db/sche
 import { limitUser, requireUser } from "lib/api-auth";
 import { userLimits } from "lib/rate-limit";
 import { canCreateProjectForTeam, isProjectTeam } from "lib/team-access";
+import { worksInProjects } from "lib/roles";
 import { DEFAULT_LABELS, DEFAULT_STATUSES } from "lib/issues";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -14,8 +15,8 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
 export async function POST(req: Request) {
   const auth = await requireUser();
   if (auth.error) return auth.error;
-  if (auth.user.role === "admin") {
-    return NextResponse.json({ message: "Admins don't own projects" }, { status: 403 });
+  if (!worksInProjects(auth.user)) {
+    return NextResponse.json({ message: "Superadmins don't work in projects" }, { status: 403 });
   }
   const limited = await limitUser(userLimits.project(auth.user.id));
   if (limited) return limited;

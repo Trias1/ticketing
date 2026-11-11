@@ -4,20 +4,32 @@ This guide is for people who use Ticketing MS day to day. To install and run you
 
 - [Roles](#roles)
 - [Your account](#your-account)
-- [For staff](#for-staff): [dashboard](#your-dashboard), [projects](#projects), [issues](#issues), [project settings](#project-settings-owners)
-- [For admins](#for-admins)
+- [Working in projects](#working-in-projects): [dashboard](#your-dashboard), [projects](#projects), [issues](#issues), [project settings](#project-settings-owners)
+- [For team admins](#for-team-admins)
+- [For superadmins](#for-superadmins)
 - [Common questions](#common-questions)
 
 ## Roles
 
-There are two kinds of account:
+There are three kinds of account:
 
 | Role | What they do |
 |---|---|
-| **Staff** | Work on issues in the projects they belong to. Every staff account belongs to one team: Cloud, DevOps or PM. |
-| **Admin** | Look after people and account security. Admins don't take part in projects or issues. |
+| **User** | Works on issues in the projects they belong to. Belongs to one team: Cloud, DevOps or PM. |
+| **Admin** | A user who also looks after the accounts in their own team: creates users, resets their passwords and deactivates them. Works in projects like any user. |
+| **Superadmin** | Looks after every account, account security and monitoring. Superadmins never see projects or issues. |
 
-Inside a project, a staff member is either an **owner** or a **member**:
+Who can create which account:
+
+| | Can create |
+|---|---|
+| Superadmin | Superadmins, admins and users, in any team |
+| Admin | Users in their own team only |
+| User | Nobody |
+
+There's no self sign-up. New accounts start with a temporary password that has to be changed at the first sign-in.
+
+Inside a project, an admin or user is either an **owner** or a **member**:
 
 | | Member | Owner |
 |---|---|---|
@@ -36,7 +48,7 @@ The person who creates a project becomes its owner. A project always keeps at le
 
 ### Signing in
 
-Sign in with the email and password your admin gave you. There's no self sign-up: if you need an account or forgot your password, ask your admin.
+Sign in with the email and password you were given. There's no self sign-up: if you need an account or forgot your password, ask your team's admin.
 
 After 5 wrong passwords for the same email, sign-in is locked for 15 minutes. Wait, then try again, or ask an admin to reset your password.
 
@@ -60,13 +72,15 @@ Open your profile from the menu with your avatar. There you can change:
 - your **email**, which needs your current password
 - your **password**. Changing it signs you out on every other device.
 
-Your role and team are set by an admin.
+Your role and team are set by a superadmin.
 
 ### Sessions
 
-You stay signed in for up to 7 days of inactivity, and at most 30 days from when you signed in. When an admin changes your role, resets your password or deactivates your account, you're signed out everywhere.
+You stay signed in for up to 7 days of inactivity, and at most 30 days from when you signed in. When your role is changed, your password is reset or your account is deactivated, you're signed out everywhere.
 
-## For staff
+## Working in projects
+
+This part is for users and admins. Superadmins don't work in projects.
 
 ### Your dashboard
 
@@ -142,7 +156,7 @@ They show as a checklist with a progress bar. Tick items directly, or use **Add 
 
 ### Project settings (owners)
 
-- **Members**: add active staff from any team as owner or member, change their role, or remove them. Removing someone unassigns their issues in the project. Members can leave a project themselves.
+- **Members**: add active users and admins from any team as owner or member, change their role, or remove them. Removing someone unassigns their issues in the project. Members can leave a project themselves.
 - **Labels**: anyone in the project can create and edit labels, with a name, color and description. Only owners can delete them.
 - **Board columns** (in Settings): add, rename and reorder columns. To delete a column, choose where its issues go. The last column can't be deleted.
 - **Project details** (in Settings): name, description, color and icon.
@@ -150,45 +164,54 @@ They show as a checklist with a progress bar. Tick items directly, or use **Add 
 
 The **Activity** page shows the latest 100 changes in the project.
 
-## For admins
+## For team admins
+
+An admin works in projects like any user, and also looks after the user accounts in their own team. The **Your team** section of the sidebar has two pages:
+
+- **Team members** lists everyone in your team. For users in your team you can **reset the password** (type one, or leave it empty to get a temporary one like `k7mp-x3qa-9tfe`, shown only once) and **deactivate** or **activate** the account. Both sign the person out everywhere.
+- **New user** creates a user in your team. Use **Generate** for a strong temporary password and share it safely; the person changes it at their first sign-in.
+
+You can't change anyone's role or team, and you can't manage other admins or superadmins. Ask a superadmin for that. Adding people to projects is done by the project's owners.
+
+## For superadmins
+
+Superadmins look after every account and the security of the whole app. Following the rule that people outside a team don't read its work, superadmins **never see projects or issues**, not even counts.
 
 ### Dashboard
 
-The admin dashboard shows the number of members, who is online now, admin accounts and accounts that need attention, plus the latest members, recent sign-ins and members by team.
+The dashboard shows the number of accounts, who is online now, superadmin accounts and accounts that need attention, plus the latest accounts, recent sign-ins and accounts by team.
 
 **Needs attention** flags:
 
 - an active account using an `@example.com` email, which is usually a leftover seed account
-- more than 3 admin accounts
+- more than 3 superadmin accounts
 - accounts with no activity for over 30 days
 - accounts that have never signed in
 
 ### Creating an account
 
-Go to **New user**. Enter the name, email, role and team, and a password. Use **Generate** for a strong random one. Share the password with the person safely. They'll have to change it the first time they sign in.
-
-Staff belong to Cloud, DevOps or PM. Admins have no team.
+Go to **New user**. Enter the name, email and a password, then choose the role: **User**, **Admin** or **Superadmin**. Users and admins also get a team (Cloud, DevOps or PM); superadmins have none. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
 
 ### Managing accounts
 
-On **Users** you can filter by All / Admins / Active / Deactivated and search by name or email. For each account you can:
+On **Users** you can filter by All / Admins / Active / Deactivated and search by name or email. **Admins** lists superadmins and admins. For each account you can:
 
-- **Change role**: signs the person out everywhere. Turning a staff member into an admin removes them from their projects and unassigns their issues.
-- **Change team** (staff only).
+- **Change role**: signs the person out everywhere. Turning someone into a superadmin removes them from their projects and unassigns their issues.
+- **Change team** (users and admins).
 - **Deactivate**: the person can no longer sign in and is signed out everywhere. Projects they owned are handed to the longest-standing active member. **Activate** lets them back in.
-- **Reset password**: type a new password, or leave it empty to get a temporary one like `k7mp-x3qa-9tfe`. It's shown only once, so copy it. The person must change it at their next sign-in and is signed out everywhere.
+- **Reset password**: type a new password, or leave it empty to get a temporary one. It's shown only once, so copy it. The person must change it at their next sign-in.
 
-You can't change your own role, deactivate yourself or reset your own password here. Accounts can't be deleted. Project memberships are managed by project owners, not admins.
+You can't change your own role, deactivate yourself or reset your own password here. Accounts can't be deleted. Project memberships are managed by project owners.
 
 ### Account security
 
-**Account security** shows the same findings as the dashboard, the admin and deactivated accounts, and a security log with sign-ins, failed and blocked sign-ins, and account changes, each with IP address and device. Filter by **Needs attention**, **Sign-ins** or **Account changes**. Events are kept for 90 days.
+**Account security** shows the same findings as the dashboard, the superadmin and deactivated accounts, and a security log with sign-ins, failed and blocked sign-ins, and account changes, each with IP address and device. Filter by **Needs attention**, **Sign-ins** or **Account changes**. Events are kept for 90 days.
 
 Watch for **token reuse** events: they mean an old session token was used again, which can be a sign that a session was stolen. That session has already been revoked; resetting the person's password is a good next step.
 
 ## Common questions
 
-**I forgot my password.** Ask an admin to reset it. You'll get a temporary password and choose your own after signing in.
+**I forgot my password.** Ask your team's admin, or a superadmin, to reset it. You'll get a temporary password and choose your own after signing in.
 
 **It says "Too many sign-in attempts".** Wait 15 minutes, then try again with the right password.
 

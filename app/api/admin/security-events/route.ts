@@ -3,7 +3,7 @@ import { and, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "db";
 import { authEvents, users } from "db/schema";
-import { requireAdmin } from "lib/api-auth";
+import { requireSuperadmin } from "lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ const GROUPS: Record<string, string[]> = {
 
 // Log keamanan untuk admin: ringkasan 24 jam + 100 kejadian terbaru (opsional per kelompok).
 export async function GET(req: Request) {
-  const auth = await requireAdmin();
+  const auth = await requireSuperadmin();
   if (auth.error) return auth.error;
 
   const group = new URL(req.url).searchParams.get("group") ?? "all";

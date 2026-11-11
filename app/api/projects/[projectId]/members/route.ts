@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { and, asc, eq, notInArray } from "drizzle-orm";
+import { and, asc, eq, inArray, notInArray } from "drizzle-orm";
 import { db } from "db";
 import { projectMembers, users } from "db/schema";
 import { requireProjectAccess } from "lib/project-access";
 import { isUuid } from "lib/membership";
+import { worksInProjects } from "lib/roles";
 
 type Ctx = { params: Promise<{ projectId: string }> };
 
-// Daftar member; owner juga mendapat daftar staff aktif yang bisa diundang.
+// Daftar member; owner juga mendapat daftar admin & user aktif yang bisa diundang.
 export async function GET(_req: Request, props: Ctx) {
   const params = await props.params;
   const access = await requireProjectAccess(params.projectId);
@@ -36,7 +37,7 @@ export async function GET(_req: Request, props: Ctx) {
       .from(users)
       .where(
         and(
-          eq(users.role, "staff"),
+          inArray(users.role, ["admin", "user"]),
           eq(users.isActive, true),
           members.length ? notInArray(users.id, members.map((m) => m.id)) : undefined
         )
@@ -47,7 +48,7 @@ export async function GET(_req: Request, props: Ctx) {
   return NextResponse.json({ members, candidates, role: access.role });
 }
 
-// Tambah member (khusus owner). Hanya staff aktif yang bisa ditambahkan.
+// Tambah member (khusus owner). Hanya admin/user aktif yang bisa ditambahkan (superadmin tidak bekerja di project).
 export async function POST(req: Request, props: Ctx) {
   const params = await props.params;
   const access = await requireProjectAccess(params.projectId, { owner: true });
@@ -58,8 +59,8 @@ export async function POST(req: Request, props: Ctx) {
   const role = body.role === "owner" ? "owner" : "member";
 
   const user = isUuid(userId) ? await db.query.users.findFirst({ where: eq(users.id, userId) }) : null;
-  if (!user || user.role !== "staff" || user.isActive === false) {
-    return NextResponse.json({ message: "Only active staff can be added" }, { status: 400 });
+  if (!user || !worksInProjects(user) || user.isActive === false) {
+    return NextResponse.json({ message: "Only active admins and users can be added" }, { status: 400 });
   }
 
   await db

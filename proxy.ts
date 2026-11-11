@@ -10,10 +10,16 @@ import {
   type AccessClaims,
   type CookieJar,
 } from "lib/session";
+import { SUPERADMIN_HOME, SUPERADMIN_TEAM } from "lib/roles";
+import { isProjectTeam } from "lib/team-access";
 
 type PendingCookie = Parameters<CookieJar["set"]>;
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+// Halaman di /dashboard/{tim}/... yang mengurus akun: admin tim untuk timnya sendiri.
+const TEAM_ADMIN_PAGES = new Set(["management-user", "register-user"]);
+// Halaman yang hanya ada di area superadmin.
+const SUPERADMIN_PAGES = new Set(["security"]);
 
 // CSRF lapis kedua (selain cookie SameSite=Lax): request yang mengubah data ke /api harus berasal
 // dari origin aplikasi ini sendiri.
@@ -75,25 +81,31 @@ export async function proxy(request: NextRequest) {
 
   // Wajib ganti password: hanya halaman profil sendiri yang boleh dibuka.
   if (claims.pwc) {
-    const profile = `/dashboard/${role === "admin" ? "admin" : team}/profile`;
+    const profile = `/dashboard/${team}/profile`;
     if (pathname !== profile) return redirect(`${profile}?required=password`);
     return next();
   }
 
-  const dashboardMatch = pathname.match(/^\/dashboard\/([^/]+)/);
+  const dashboardMatch = pathname.match(/^\/dashboard\/([^/]+)(?:\/([^/]+))?/);
   if (dashboardMatch) {
-    const pathTeam = dashboardMatch[1];
+    const [, pathTeam, section] = dashboardMatch;
+    const home = `/dashboard/${team}`;
 
-    if (role === "admin") return next();
-    if (pathTeam === "admin") return redirect("/login");
-
-    if (["cloud", "pm", "devops"].includes(pathTeam)) {
-      if (role !== "staff") return redirect("/login");
-      // Akses project dicek per member di halaman & API, karena staff bisa ikut project tim lain.
-    } else {
-      // Segmen tim tidak dikenal: arahkan ke dashboard tim user sendiri.
-      return redirect(`/dashboard/${team}`);
+    // Superadmin hanya punya area superadmin. Sesuai SOP tidak pernah membuka area tim (project & issue).
+    if (role === "superadmin") {
+      return pathTeam === SUPERADMIN_TEAM ? next() : redirect(SUPERADMIN_HOME);
     }
+    if (role !== "admin" && role !== "user") return redirect("/login");
+
+    // Segmen tim tidak dikenal (termasuk area superadmin): arahkan ke dashboard tim sendiri.
+    // Akses project dicek per member di halaman & API, karena orang bisa ikut project tim lain.
+    if (!isProjectTeam(pathTeam)) return redirect(home);
+
+    // Halaman akun tim hanya untuk admin, dan hanya untuk timnya sendiri.
+    if (section && TEAM_ADMIN_PAGES.has(section) && (role !== "admin" || pathTeam !== team)) {
+      return redirect(home);
+    }
+    if (section && SUPERADMIN_PAGES.has(section)) return redirect(home);
   }
 
   return next();

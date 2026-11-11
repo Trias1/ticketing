@@ -1,4 +1,4 @@
-// Membuat akun admin pertama. Email & password diambil dari environment, tidak pernah ditulis di kode:
+// Membuat akun superadmin pertama. Email & password diambil dari environment, tidak pernah ditulis di kode:
 //   SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... npx tsx scripts/seed-user.ts
 import { sql } from "drizzle-orm";
 import { hash } from "bcryptjs";
@@ -26,11 +26,11 @@ async function seedAdmin() {
     name: "Admin",
     email,
     password: await hash(password, 12),
-    role: "admin",
-    team: "admin",
+    role: "superadmin",
+    team: "superadmin",
     isActive: true,
   });
-  console.log("Admin user created:", email);
+  console.log("Superadmin created:", email);
 }
 
 seedAdmin()
