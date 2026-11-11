@@ -95,23 +95,7 @@ export function Badge({ tone = "neutral", children }: { tone?: BadgeTone; childr
   );
 }
 
-export const TEAM_TONE: Record<string, BadgeTone> = {
-  cloud: "blue",
-  devops: "orange",
-  pm: "violet",
-  superadmin: "neutral",
-};
-
-export const TEAM_LABEL: Record<string, string> = {
-  cloud: "Cloud",
-  devops: "DevOps",
-  pm: "PM",
-  superadmin: "Superadmin",
-};
-
-export function TeamBadge({ team }: { team: string }) {
-  return <Badge tone={TEAM_TONE[team] ?? "neutral"}>{TEAM_LABEL[team] ?? team}</Badge>;
-}
+// Nama & warna tim: components/ui/team.tsx (dari tabel teams).
 
 const avatarColors = ["#0f766e", "#1d4ed8", "#6d28d9", "#a16207", "#b91c1c", "#be185d"];
 

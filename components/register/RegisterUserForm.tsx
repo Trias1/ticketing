@@ -8,15 +8,7 @@ import { toast } from "sonner";
 import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
-import { TEAM_LABEL } from "components/ui/kit";
-
-type Team = "cloud" | "devops" | "pm";
-
-const WORK_TEAMS: { value: Team; label: string; hint: string }[] = [
-  { value: "cloud", label: "Cloud", hint: "Cloud team workspace" },
-  { value: "devops", label: "DevOps", hint: "DevOps team workspace" },
-  { value: "pm", label: "Project Manager", hint: "Project management team workspace" },
-];
+import { TeamName, useTeams } from "components/ui/team";
 
 const inputClass =
   "h-9 w-full rounded-md border border-tk-border bg-tk-surface px-3 text-sm text-tk-text placeholder:text-tk-faint focus:border-tk-accent focus:outline-hidden focus:ring-2 focus:ring-tk-accent/20 dark:border-tk-dark-border dark:bg-tk-dark-surface dark:text-tk-dark-text";
@@ -77,13 +69,15 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [team, setTeam] = useState<Team>(superadmin ? "cloud" : (viewer.team as Team));
+  // Superadmin: biasanya tim baru untuk admin baru (newTeam), atau pilih tim yang sudah ada (team).
+  const { data: teams = [] } = useTeams();
+  const [teamMode, setTeamMode] = useState<"new" | "existing">("new");
+  const [newTeam, setNewTeam] = useState("");
+  const [team, setTeam] = useState("");
+  const existingTeam = team || teams[0]?.slug || "";
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const chooseTeam = (next: Team) => {
-    setTeam(next);
-  };
 
 
   const handleGenerate = () => {
@@ -106,7 +100,13 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, team }),
+        body: JSON.stringify(
+          superadmin
+            ? teamMode === "new"
+              ? { name, email, password, newTeam }
+              : { name, email, password, team: existingTeam }
+            : { name, email, password }
+        ),
       });
       const data = await res.json().catch(() => ({}));
 
@@ -213,31 +213,65 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
 
           {superadmin ? (
             <Section title="Access" description="You create the admin of a team. Admins then create the users of their own team.">
-              <Field label="Team" htmlFor="team">
-                <select
-                  id="team"
-                  value={team}
-                  onChange={(e) => chooseTeam(e.target.value as Team)}
-                  className={inputClass}
-                >
-                  {WORK_TEAMS.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              <fieldset>
+                <legend className="mb-2 text-sm font-semibold">Team</legend>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="team-mode" checked={teamMode === "new"} onChange={() => setTeamMode("new")} className="accent-tk-accent" />
+                    New team
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="team-mode"
+                      checked={teamMode === "existing"}
+                      onChange={() => setTeamMode("existing")}
+                      disabled={teams.length === 0}
+                      className="accent-tk-accent"
+                    />
+                    Existing team
+                  </label>
+                </div>
+              </fieldset>
+              {teamMode === "new" ? (
+                <Field label="Team name" htmlFor="new-team" hint="You can rename the team later on the Teams page.">
+                  <input
+                    id="new-team"
+                    value={newTeam}
+                    onChange={(e) => setNewTeam(e.target.value)}
+                    required
+                    maxLength={50}
+                    autoComplete="off"
+                    className={inputClass}
+                    placeholder="e.g. Network Operations"
+                  />
+                </Field>
+              ) : (
+                <Field label="Team" htmlFor="team">
+                  <select id="team" value={existingTeam} onChange={(e) => setTeam(e.target.value)} className={inputClass}>
+                    {teams.map((t) => (
+                      <option key={t.slug} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
               <p className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
-                This account will be the <span className="font-semibold">Admin</span> of the{" "}
-                <span className="font-semibold">{WORK_TEAMS.find((t) => t.value === team)?.label}</span> team. Admins work in
-                projects and manage the user accounts of their team.
+                This account will be the <span className="font-semibold">Admin</span> of{" "}
+                {teamMode === "new" ? (
+                  newTeam.trim() ? <>the new <span className="font-semibold">{newTeam.trim()}</span> team</> : "a new team"
+                ) : (
+                  <>the <span className="font-semibold"><TeamName team={existingTeam} /></span> team</>
+                )}
+                . Admins work in projects and manage the user accounts of their team.
               </p>
             </Section>
           ) : (
             <Section title="Access" description="Accounts you create join your team.">
               <p className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
                 This account will be a <span className="font-semibold">User</span> in the{" "}
-                <span className="font-semibold">{TEAM_LABEL[viewer.team] ?? viewer.team}</span> team. Project owners add
+                <span className="font-semibold"><TeamName team={viewer.team} /></span> team. Project owners add
                 users to their projects.
               </p>
             </Section>

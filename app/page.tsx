@@ -37,7 +37,7 @@ const ADMIN_FEATURES = [
   },
   {
     title: "One superadmin",
-    body: "The owner creates each team's admin and sees every account, with dormant-account checks and a sign-in log with IP address and device. Never sees projects or issues.",
+    body: "The owner creates teams and their admins, renames teams, and sees every account, with dormant-account checks and a sign-in log with IP address and device. Never sees projects or issues.",
   },
 ];
 

@@ -1,8 +1,11 @@
 import { newPasswordProblem, registerUser } from "lib/auth";
 import { limitUser, requirePeopleManager } from "lib/api-auth";
 import { userLimits } from "lib/rate-limit";
+import { eq } from "drizzle-orm";
+import { db } from "db";
+import { users } from "db/schema";
 import { isSuperadmin } from "lib/roles";
-import { isProjectTeam } from "lib/team-access";
+import { cleanTeamName, createTeam, teamExists } from "lib/teams";
 
 const json = (body: unknown, status: number) =>
   new Response(JSON.stringify(body), {
@@ -10,7 +13,7 @@ const json = (body: unknown, status: number) =>
     headers: { "Content-Type": "application/json" },
   });
 
-// Membuat akun baru. Superadmin: admin tim. Admin: user di timnya sendiri.
+// Membuat akun baru. Superadmin: admin tim (boleh sekalian membuat timnya). Admin: user di timnya sendiri.
 export async function POST(req: Request) {
   const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
@@ -24,16 +27,28 @@ export async function POST(req: Request) {
     const password = typeof body.password === "string" ? body.password : "";
     // Superadmin hanya membuat admin tim; user hanya dibuat oleh admin timnya. Superadmin baru tidak
     // pernah dibuat dari aplikasi (hanya lewat scripts/seed-user.ts).
-    const role = isSuperadmin(auth.user) ? "admin" : "user";
-    const team = isSuperadmin(auth.user) ? body.team : auth.user.team;
+    const superadmin = isSuperadmin(auth.user);
+    const role = superadmin ? "admin" : "user";
+    // Superadmin memilih tim yang ada (team) atau membuat tim baru untuk admin ini (newTeam = nama).
+    const newTeam = superadmin ? cleanTeamName(body.newTeam) : "";
+    let team = superadmin ? body.team : auth.user.team;
 
     if (!name || !email || !password) {
       return json({ message: "Name, email, and password are required" }, 400);
     }
     const problem = await newPasswordProblem(password, { email, name });
     if (problem) return json({ message: problem }, 400);
-    if (!isProjectTeam(team)) {
-      return json({ message: "Invalid team" }, 400);
+
+    if (newTeam) {
+      // Cek email dulu supaya tidak tertinggal tim kosong saat akun gagal dibuat.
+      if (await db.query.users.findFirst({ where: eq(users.email, email), columns: { id: true } })) {
+        return json({ message: "This email is already registered" }, 409);
+      }
+      const created = await createTeam(newTeam);
+      if (!created.team) return json({ message: created.error ?? "Failed to create the team" }, 400);
+      team = created.team.slug;
+    } else if (!(await teamExists(team))) {
+      return json({ message: "Choose a team" }, 400);
     }
 
     const result = await registerUser({ name, email, password, role, team });

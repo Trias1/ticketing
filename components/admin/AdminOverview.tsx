@@ -22,13 +22,12 @@ import {
   Card,
   EmptyState,
   Skeleton,
-  TeamBadge,
-  TEAM_LABEL,
   TextLink,
   formatDate,
   timeAgo,
   type BadgeTone,
 } from "components/ui/kit";
+import { TeamBadge, TeamName } from "components/ui/team";
 import {
   useAdminOverview,
   type AdminOverview as Overview,
@@ -312,7 +311,7 @@ function TeamMembers({ data, loading }: SectionProps) {
             <li key={t.team}>
               <div className="mb-1.5 flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 font-medium">
-                  {TEAM_LABEL[t.team] ?? t.team}
+                  <TeamName team={t.team} />
                   {t.online > 0 && (
                     <span className="flex items-center gap-1 text-xs font-normal text-tk-green dark:text-[#86efac]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#2da160]" /> {t.online} online

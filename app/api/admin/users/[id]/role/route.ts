@@ -8,7 +8,7 @@ import { logAuthEvent, requestMeta } from "lib/audit";
 import { clientIp, userLimits } from "lib/rate-limit";
 import { isUuid } from "lib/membership";
 import { isSuperadmin } from "lib/roles";
-import { isProjectTeam } from "lib/team-access";
+import { teamExists } from "lib/teams";
 
 export async function PATCH(
   request: Request,
@@ -38,7 +38,7 @@ export async function PATCH(
     if (role !== "admin" && role !== "user") {
       return NextResponse.json({ message: "Role must be admin or user" }, { status: 400 });
     }
-    if (!isProjectTeam(team)) {
+    if (!(await teamExists(team))) {
       return NextResponse.json({ message: "Invalid team" }, { status: 400 });
     }
 

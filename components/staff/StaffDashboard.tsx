@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { AlertTriangle, ArrowRight, CalendarClock, FolderPlus, PenSquare, Star, Ticket } from "lucide-react";
-import { ButtonLink, Card, EmptyState, ProjectAvatar, Skeleton, TEAM_LABEL, TextLink, timeAgo } from "components/ui/kit";
+import { ButtonLink, Card, EmptyState, ProjectAvatar, Skeleton, TextLink, timeAgo } from "components/ui/kit";
+import { TeamName } from "components/ui/team";
 import { fetcher, lastProjectId, projectBase, type MyProject } from "./hooks";
 import { ActivityIcon, activityText, IssueRow, type IssueListItem } from "./issue-ui";
 
@@ -190,7 +191,7 @@ export default function StaffDashboard({ homeTeam, userName }: { homeTeam: strin
                       {p.starred && <Star className="h-3.5 w-3.5 shrink-0 fill-current text-[#ca8a04]" />}
                     </span>
                     <span className="block text-xs text-tk-muted dark:text-tk-dark-muted">
-                      {TEAM_LABEL[p.team] ?? p.team} · {p.openIssues} open · {p.memberCount} {p.memberCount === 1 ? "member" : "members"}
+                      <TeamName team={p.team} /> · {p.openIssues} open · {p.memberCount} {p.memberCount === 1 ? "member" : "members"}
                     </span>
                   </span>
                 </Link>

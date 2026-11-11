@@ -25,6 +25,7 @@ const ADMIN_PAGES: Record<string, string> = {
   "register-user": "New team admin",
   security: "Account security",
   profile: "Edit profile",
+  teams: "Teams",
 };
 
 // Halaman akun tim (khusus admin tim).

@@ -11,6 +11,12 @@ export type Role = (typeof ROLES)[number];
 export const SUPERADMIN_TEAM = "superadmin";
 export const SUPERADMIN_HOME = `/dashboard/${SUPERADMIN_TEAM}`;
 
+// Slug tim kerja (tabel teams). Bentuknya dicek di proxy; keberadaannya dicek di API & halaman.
+export const TEAM_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+export const RESERVED_TEAM_SLUGS = new Set([SUPERADMIN_TEAM, "admin", "user", "api", "new", "login"]);
+export const isWorkTeamSlug = (slug: string | null | undefined) =>
+  !!slug && TEAM_SLUG_PATTERN.test(slug) && !RESERVED_TEAM_SLUGS.has(slug);
+
 type HasRole = { role?: string | null };
 type HasRoleTeam = { role?: string | null; team?: string | null };
 

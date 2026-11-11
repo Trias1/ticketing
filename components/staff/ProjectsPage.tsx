@@ -6,7 +6,8 @@ import { mutate } from "swr";
 import clsx from "clsx";
 import { toast } from "sonner";
 import { FolderPlus, Search, Star } from "lucide-react";
-import { Badge, ButtonLink, EmptyState, ProjectAvatar, Skeleton, TeamBadge, timeAgo } from "components/ui/kit";
+import { Badge, ButtonLink, EmptyState, ProjectAvatar, Skeleton, timeAgo } from "components/ui/kit";
+import { TeamBadge } from "components/ui/team";
 import { projectBase, sendJson, useMyProjects, type MyProject } from "./hooks";
 
 type Tab = "all" | "starred" | "owned";

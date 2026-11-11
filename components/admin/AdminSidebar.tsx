@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   UserPlus,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { BrandMark } from "components/ui/kit";
 
@@ -31,6 +32,7 @@ const sections: { title: string; items: NavItem[] }[] = [
     title: "Members",
     items: [
       { name: "Users", href: "/dashboard/superadmin/management-user", icon: Users },
+      { name: "Teams", href: "/dashboard/superadmin/teams", icon: UsersRound },
       { name: "New team admin", href: "/dashboard/superadmin/register-user", icon: UserPlus },
     ],
   },

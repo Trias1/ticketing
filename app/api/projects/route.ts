@@ -5,7 +5,6 @@ import { db } from "db";
 import { projectLabels, projectMembers, projects, ticketStatuses } from "db/schema";
 import { limitUser, requireUser } from "lib/api-auth";
 import { userLimits } from "lib/rate-limit";
-import { canCreateProjectForTeam, isProjectTeam } from "lib/team-access";
 import { worksInProjects } from "lib/roles";
 import { DEFAULT_LABELS, DEFAULT_STATUSES } from "lib/issues";
 
@@ -24,15 +23,13 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
-  const team = typeof body.team === "string" ? body.team : auth.user.team;
+  // Project selalu dibuat di tim pembuatnya; akses lintas tim diatur lewat member project.
+  const team = auth.user.team;
   const color = typeof body.color === "string" && HEX.test(body.color) ? body.color : "#0f766e";
   const icon = typeof body.icon === "string" ? body.icon.trim().slice(0, 16) || null : null;
 
   if (!name || name.length > 100) {
     return NextResponse.json({ message: "Project name is required (max 100 characters)" }, { status: 400 });
-  }
-  if (!isProjectTeam(team) || !canCreateProjectForTeam(auth.user, team)) {
-    return NextResponse.json({ message: "You can't create projects for this team" }, { status: 403 });
   }
 
   const baseSlug = slugify(name, { lower: true, strict: true }).slice(0, 80).replace(/-+$/, "") || "project";

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { ChevronDown, LogOut, ShieldCheck, User } from "lucide-react";
-import { Avatar, Badge, TEAM_LABEL } from "./kit";
+import { Avatar, Badge } from "./kit";
+import { TeamName } from "./team";
 import { SUPERADMIN_HOME, isSuperadmin, isTeamAdmin } from "lib/roles";
 
 type MenuUser = {
@@ -142,7 +143,7 @@ export default function UserMenu({ user, profileHref, onSignOut }: Props) {
                   ) : (
                     <>
                       {isTeamAdmin(user) && <Badge tone="accent">Admin</Badge>}
-                      <Badge>{TEAM_LABEL[user.team ?? ""] ?? user.team}</Badge>
+                      <Badge><TeamName team={user.team} /></Badge>
                     </>
                   ))}
               </div>

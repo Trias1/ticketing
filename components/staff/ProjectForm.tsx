@@ -7,7 +7,8 @@ import { mutate } from "swr";
 import clsx from "clsx";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import { ProjectAvatar, TEAM_LABEL } from "components/ui/kit";
+import { ProjectAvatar } from "components/ui/kit";
+import { TeamName } from "components/ui/team";
 import { projectBase, sendJson } from "./hooks";
 
 export const PROJECT_COLORS = ["#0f766e", "#1d4ed8", "#6d28d9", "#be185d", "#b91c1c", "#c2410c", "#a16207", "#15803d", "#0e7490", "#52525b"];
@@ -126,7 +127,7 @@ export default function ProjectForm({ team }: { team: string }) {
         setIcon={setIcon}
       />
       <div className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
-        The project is created in the <span className="font-semibold">{TEAM_LABEL[team] ?? team}</span> team. You&apos;ll be its owner and can
+        The project is created in the <span className="font-semibold"><TeamName team={team} /></span> team. You&apos;ll be its owner and can
         add members from any team.
       </div>
       <div className="flex gap-2 border-t border-tk-divider pt-5 dark:border-tk-dark-divider">

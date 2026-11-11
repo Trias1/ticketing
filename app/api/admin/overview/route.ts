@@ -4,7 +4,7 @@ import { users } from "db/schema";
 import { desc } from "drizzle-orm";
 import { requireSuperadmin } from "lib/api-auth";
 import { SUPERADMIN_TEAM, isSuperadmin } from "lib/roles";
-import { PROJECT_TEAMS } from "lib/team-access";
+import { listTeams } from "lib/teams";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,6 @@ export const dynamic = "force-dynamic";
 const ONLINE_WINDOW_MS = 60 * 1000;
 // Akun aktif yang tidak login selama ini dianggap "dormant".
 const DORMANT_DAYS = 30;
-const TEAMS = [SUPERADMIN_TEAM, ...PROJECT_TEAMS];
 
 export async function GET() {
   const auth = await requireSuperadmin();
@@ -96,7 +95,7 @@ export async function GET() {
         neverLoggedIn: neverLoggedIn.length,
         dormant: dormant.length,
       },
-      teams: TEAMS.map((team) => {
+      teams: [SUPERADMIN_TEAM, ...(await listTeams()).map((t) => t.slug)].map((team) => {
         const members = all.filter((u) => u.team === team);
         return {
           team,

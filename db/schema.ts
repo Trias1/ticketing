@@ -10,7 +10,8 @@ import {
   jsonb,
   index,
 } from "drizzle-orm/pg-core";
-import { unique } from "drizzle-orm/pg-core";
+import { unique, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // --- Users
 export const users = pgTable("users", {
@@ -31,6 +32,19 @@ export const users = pgTable("users", {
   // (akun baru / password direset admin / password lama tidak memenuhi aturan).
   mustChangePassword: boolean("must_change_password").default(false).notNull(),
 });
+
+// --- Teams
+// Tim kerja, dibuat superadmin. slug dipakai di URL (/dashboard/{slug}) dan di users.team /
+// projects.team, jadi tidak pernah berubah; yang bisa diganti hanya name.
+export const teams = pgTable(
+  "teams",
+  {
+    slug: varchar("slug", { length: 40 }).primaryKey(),
+    name: varchar("name", { length: 50 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("teams_name_lower_idx").on(sql`lower(${t.name})`)]
+);
 
 // --- Categories
 export const categories = pgTable("categories", {

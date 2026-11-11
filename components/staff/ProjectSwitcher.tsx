@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Check, ChevronsUpDown, LayoutGrid, Plus, Search } from "lucide-react";
-import { ProjectAvatar, TEAM_LABEL } from "components/ui/kit";
+import { ProjectAvatar } from "components/ui/kit";
+import { TeamName } from "components/ui/team";
 import { projectBase, useCurrentProject, useMyProjects, type MyProject } from "./hooks";
 
 // Pemilih project ala workspace switcher: dikelompokkan per tim, bisa dicari.
@@ -86,7 +87,7 @@ export default function ProjectSwitcher({ collapsed, homeTeam }: { collapsed: bo
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold leading-tight">{label}</span>
               <span className="block text-xs leading-tight text-tk-muted dark:text-tk-dark-muted">
-                {current ? TEAM_LABEL[current.team] ?? current.team : `${projects.length} ${projects.length === 1 ? "project" : "projects"}`}
+                {current ? <TeamName team={current.team} /> : `${projects.length} ${projects.length === 1 ? "project" : "projects"}`}
               </span>
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 text-tk-faint" />
@@ -123,7 +124,7 @@ export default function ProjectSwitcher({ collapsed, homeTeam }: { collapsed: bo
             )}
             {groups.map(([team, items]) => (
               <div key={team}>
-                <p className="px-3 pb-1 pt-2 text-xs font-semibold text-tk-faint">{TEAM_LABEL[team] ?? team}</p>
+                <p className="px-3 pb-1 pt-2 text-xs font-semibold text-tk-faint"><TeamName team={team} /></p>
                 {items.map((p) => {
                   const index = filtered.indexOf(p);
                   return (

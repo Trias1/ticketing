@@ -15,7 +15,7 @@ There are three kinds of account:
 
 | Role | What they do |
 |---|---|
-| **User** | Works on issues in the projects they belong to. Belongs to one team: Cloud, DevOps or PM. |
+| **User** | Works on issues in the projects they belong to. Belongs to one team. |
 | **Admin** | A user who also looks after the accounts in their own team: creates users, resets their passwords and deactivates them. Works in projects like any user. |
 | **Superadmin** | The owner of the app. There is only one. Looks after every account, account security and monitoring, and never sees projects or issues. |
 
@@ -192,16 +192,25 @@ The dashboard shows the number of accounts, who is online now, superadmin accoun
 
 ### Creating an account
 
-Go to **New team admin**. Enter the name, email and a password, and choose the team (Cloud, DevOps or PM). The account is created as that team's **admin**; the admin then creates the users of the team. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
+Go to **New team admin**. Enter the name, email and a password. Under **Team**, type the name of a **new team**, or pick an **existing team**. The account is created as that team's **admin**; the admin then creates the users of the team. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
 
 The superadmin doesn't create users directly.
+
+### Teams
+
+The **Teams** page lists every team with its number of admins and accounts. Teams without an admin are marked **None**.
+
+- **Rename** a team at any time. Its accounts, projects and links stay the same.
+- **Delete** a team only when it has no accounts and no projects.
+
+A team is created together with its first admin, on **New team admin**.
 
 ### Managing accounts
 
 On **Users** you can filter by All / Admins / Active / Deactivated and search by name or email. **Admins** lists the superadmin and the team admins. For each account you can:
 
 - **Change role** between admin and user: signs the person out everywhere.
-- **Change team** (users and admins).
+- **Change team** (users and admins): move the account to any existing team.
 - **Deactivate**: the person can no longer sign in and is signed out everywhere. Projects they owned are handed to the longest-standing active member. **Activate** lets them back in.
 - **Reset password**: type a new password, or leave it empty to get a temporary one. It's shown only once, so copy it. The person must change it at their next sign-in.
 

@@ -136,12 +136,12 @@ npm run start
 
 Installs from before this change have two roles, `admin` and `staff`. Run [`drizzle/0023_three_roles.sql`](../drizzle/0023_three_roles.sql) in the Neon SQL editor, as one transaction, right when you deploy the new code. It turns every `admin` into a `superadmin` and every `staff` into a `user`, and signs everyone out once, because their old sessions carry the old role. Try it on a Neon branch first.
 
+### Upgrading to teams stored in the database
+
+Teams used to be fixed in the code (Cloud, DevOps, PM). Now they live in a `teams` table and the superadmin creates and renames them. Run [`drizzle/0024_teams.sql`](../drizzle/0024_teams.sql) **before** deploying the new code. It only adds the table and fills it with the teams your accounts and projects already use, so the old code keeps working until the deploy.
+
 ## Known limitations
 
-- **Teams are fixed to Cloud, DevOps and PM.** Adding or renaming a team needs code changes:
-  - `lib/team-access.ts` (`PROJECT_TEAMS`): the list used for access checks, account management and the dashboard
-  - `components/register/RegisterUserForm.tsx` (`WORK_TEAMS`): team names and hints in the New user form
-  - `components/ui/kit.tsx` and `components/admin/AdminOverview.tsx`: team labels and colors
 - **Neon only.** The database driver is `@neondatabase/serverless` over HTTP.
 - **Cloudinary only** for uploads. Using another image host means changing the upload routes, the `img-src` rule of the Content Security Policy in `next.config.js`, and the allowed avatar URLs in `app/api/profileusers/route.ts`.
 - **No self sign-up and no email.** The superadmin creates team admins and team admins create users; nothing is sent by email.

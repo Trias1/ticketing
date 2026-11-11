@@ -8,7 +8,7 @@ import { Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
 import PasswordStrength from "components/ui/PasswordStrength";
 import { checkPassword } from "lib/password-policy";
 import { SUPERADMIN_TEAM, roleLabel } from "lib/roles";
-import { PROJECT_TEAMS } from "lib/team-access";
+import { TeamName, useTeams } from "components/ui/team";
 import {
   Avatar,
   Badge,
@@ -17,7 +17,6 @@ import {
   ConfirmDialog,
   EmptyState,
   Skeleton,
-  TEAM_LABEL,
   formatDate,
   timeAgo,
 } from "components/ui/kit";
@@ -62,6 +61,7 @@ export default function ManagementUserPage() {
   const { data: users, error, isLoading, mutate } = useSWR<User[]>("/api/admin/users", fetcher);
   const { data: me } = useSWR<{ user: { id: string; role: string; team: string } }>("/api/jwt", fetcher);
   const superadmin = me?.user.role === "superadmin";
+  const { data: teams = [] } = useTeams();
   const myTeam = me?.user.team ?? "";
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -157,7 +157,12 @@ export default function ManagementUserPage() {
             <p className="mt-1 text-sm text-tk-muted dark:text-tk-dark-muted">
               {superadmin || !me
                 ? "Manage roles, teams, and account status. Project access is managed by project owners."
-                : `Accounts in the ${TEAM_LABEL[myTeam] ?? myTeam} team. You can reset passwords and deactivate users; roles and teams are managed by a superadmin.`}
+                : (
+                    <>
+                      Accounts in the <TeamName team={myTeam} /> team. You can reset passwords and deactivate users; roles
+                      and teams are managed by the superadmin.
+                    </>
+                  )}
             </p>
           </div>
           <ButtonLink href={`/dashboard/${myTeam || SUPERADMIN_TEAM}/register-user`}>
@@ -275,14 +280,14 @@ export default function ManagementUserPage() {
                             onChange={(e) => updateRole(u, u.role, e.target.value)}
                             className={selectClass}
                           >
-                            {PROJECT_TEAMS.map((t) => (
-                              <option key={t} value={t}>
-                                {TEAM_LABEL[t] ?? t}
+                            {teams.map((t) => (
+                              <option key={t.slug} value={t.slug}>
+                                {t.name}
                               </option>
                             ))}
                           </select>
                           ) : (
-                            <span className="text-sm">{TEAM_LABEL[u.team] ?? u.team}</span>
+                            <span className="text-sm"><TeamName team={u.team} /></span>
                           )}
                         </td>
 

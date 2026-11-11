@@ -10,8 +10,7 @@ import {
   type AccessClaims,
   type CookieJar,
 } from "lib/session";
-import { SUPERADMIN_HOME, SUPERADMIN_TEAM } from "lib/roles";
-import { isProjectTeam } from "lib/team-access";
+import { SUPERADMIN_HOME, SUPERADMIN_TEAM, isWorkTeamSlug } from "lib/roles";
 
 type PendingCookie = Parameters<CookieJar["set"]>;
 
@@ -19,7 +18,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 // Halaman di /dashboard/{tim}/... yang mengurus akun: admin tim untuk timnya sendiri.
 const TEAM_ADMIN_PAGES = new Set(["management-user", "register-user"]);
 // Halaman yang hanya ada di area superadmin.
-const SUPERADMIN_PAGES = new Set(["security"]);
+const SUPERADMIN_PAGES = new Set(["security", "teams"]);
 
 // CSRF lapis kedua (selain cookie SameSite=Lax): request yang mengubah data ke /api harus berasal
 // dari origin aplikasi ini sendiri.
@@ -97,9 +96,9 @@ export async function proxy(request: NextRequest) {
     }
     if (role !== "admin" && role !== "user") return redirect("/login");
 
-    // Segmen tim tidak dikenal (termasuk area superadmin): arahkan ke dashboard tim sendiri.
-    // Akses project dicek per member di halaman & API, karena orang bisa ikut project tim lain.
-    if (!isProjectTeam(pathTeam)) return redirect(home);
+    // Segmen yang bukan slug tim (termasuk area superadmin): arahkan ke dashboard tim sendiri.
+    // Keberadaan tim & akses project dicek di halaman & API, karena orang bisa ikut project tim lain.
+    if (!isWorkTeamSlug(pathTeam)) return redirect(home);
 
     // Halaman akun tim hanya untuk admin, dan hanya untuk timnya sendiri.
     if (section && TEAM_ADMIN_PAGES.has(section) && (role !== "admin" || pathTeam !== team)) {

@@ -31,7 +31,7 @@ A self-hosted ticketing workspace for small teams. Users run their work in proje
 - **Project settings for owners.** Members and roles, labels with colors, board columns, and the project's name, icon and color.
 
 ### For the superadmin
-- **Accounts.** Create team admins, switch accounts between admin and user, change teams, deactivate, or reset a password with a one-time temporary password.
+- **Teams and accounts.** Create teams together with their admin, rename teams, switch accounts between admin and user, move them between teams, deactivate, or reset a password with a one-time temporary password.
 - **Security overview.** Dormant and never-used accounts, extra superadmin accounts, and a sign-in log showing successful, failed and blocked sign-ins with IP address and device.
 - The superadmin doesn't take part in projects: people, not tickets.
 
@@ -101,7 +101,7 @@ Open http://localhost:3000 and sign in with the superadmin account you just crea
 
 > `.env*` files (except `.env.example`) are ignored by git and by Vercel uploads. Never commit real credentials.
 
-Deploying to Vercel or your own server, upgrading, and the current limitations (such as the fixed Cloud, DevOps and PM teams) are covered in the [self-hosting guide](docs/self-hosting.md).
+Deploying to Vercel or your own server, upgrading, and the current limitations are covered in the [self-hosting guide](docs/self-hosting.md).
 
 ## Health check
 
