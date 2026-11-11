@@ -37,7 +37,7 @@ The details, including how to run the migrations, are in [`docs/security.md`](do
 
 | | |
 |---|---|
-| Framework | Next.js 15 (App Router), React 19, TypeScript |
+| Framework | Next.js 16 (App Router), React 19, TypeScript |
 | Styling | Tailwind CSS 4 |
 | Database | PostgreSQL on Neon, Drizzle ORM |
 | Uploads | Cloudinary |
@@ -45,7 +45,7 @@ The details, including how to run the migrations, are in [`docs/security.md`](do
 
 ## Getting started
 
-**Requirements:** Node.js 20 or newer, a Postgres database (Neon works out of the box), and a Cloudinary account for image uploads.
+**Requirements:** Node.js 20.9 or newer, a Postgres database (Neon works out of the box), and a Cloudinary account for image uploads.
 
 ```bash
 git clone https://github.com/Trias1/ticketing.git
@@ -86,9 +86,19 @@ Open http://localhost:3000 and sign in with the admin account you just created.
 
 > `.env*` files are ignored by git and by Vercel uploads. Never commit real credentials.
 
+## Health check
+
+For uptime monitors:
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/health` | Returns `{"ok":true}` without touching the database. Point your monitor here, so a check every minute doesn't keep a serverless database (such as Neon) from suspending. |
+| `GET /api/health?deep=1` | Also runs a database query and returns `503` when the database is down. Limited to 6 requests per minute per IP; use it for manual checks, not for monitors. |
+
 ## Project structure
 
 ```
+proxy.ts        Runs before dashboard pages and API routes: sign-in check, CSRF, write rate limits
 app/            Pages and API routes (App Router)
 components/     UI: admin, staff workspace, shared kit
 db/             Drizzle schema and database client
