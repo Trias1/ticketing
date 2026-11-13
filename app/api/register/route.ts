@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "db";
 import { users } from "db/schema";
 import { isSuperadmin } from "lib/roles";
-import { cleanTeamName, createTeam } from "lib/teams";
+import { cleanTeamName, createTeam, otherActiveAdmin, teamExists } from "lib/teams";
 
 const json = (body: unknown, status: number) =>
   new Response(JSON.stringify(body), {
@@ -13,7 +13,8 @@ const json = (body: unknown, status: number) =>
     headers: { "Content-Type": "application/json" },
   });
 
-// Membuat akun baru. Superadmin: admin + tim barunya. Admin: user di timnya sendiri.
+// Membuat akun baru. Superadmin: admin untuk tim yang belum punya admin, atau untuk tim baru.
+// Admin: user di timnya sendiri.
 export async function POST(req: Request) {
   const auth = await requirePeopleManager();
   if (auth.error) return auth.error;
@@ -29,16 +30,18 @@ export async function POST(req: Request) {
     // pernah dibuat dari aplikasi (hanya lewat scripts/seed-user.ts).
     const superadmin = isSuperadmin(auth.user);
     const role = superadmin ? "admin" : "user";
-    // Setiap admin baru selalu mendapat tim baru miliknya sendiri (newTeam = nama tim), supaya tidak ada
-    // tim yang dipakai bersama. User selalu masuk ke tim admin yang membuatnya.
-    const newTeam = superadmin ? cleanTeamName(body.newTeam) : "";
+    // Admin baru masuk ke tim yang sudah ada tapi belum punya admin (existingTeam = slug), atau ke tim
+    // baru (newTeam = nama tim). Satu tim tetap hanya punya satu admin aktif.
+    // User selalu masuk ke tim admin yang membuatnya.
+    const existingTeam = superadmin && typeof body.existingTeam === "string" ? body.existingTeam : "";
+    const newTeam = superadmin && !existingTeam ? cleanTeamName(body.newTeam) : "";
     let team = auth.user.team;
 
     if (!name || !email || !password) {
       return json({ message: "Name, email, and password are required" }, 400);
     }
-    if (superadmin && !newTeam) {
-      return json({ message: "Enter a name for the admin's new team" }, 400);
+    if (superadmin && !existingTeam && !newTeam) {
+      return json({ message: "Choose a team for the admin, or enter a name for a new team" }, 400);
     }
     const problem = await newPasswordProblem(password, { email, name });
     if (problem) return json({ message: problem }, 400);
@@ -48,9 +51,16 @@ export async function POST(req: Request) {
       if (await db.query.users.findFirst({ where: eq(users.email, email), columns: { id: true } })) {
         return json({ message: "This email is already registered" }, 409);
       }
-      const created = await createTeam(newTeam);
-      if (!created.team) return json({ message: created.error ?? "Failed to create the team" }, 400);
-      team = created.team.slug;
+      if (existingTeam) {
+        if (!(await teamExists(existingTeam))) return json({ message: "Invalid team" }, 400);
+        const other = await otherActiveAdmin(existingTeam);
+        if (other) return json({ message: `This team already has an admin (${other})` }, 400);
+        team = existingTeam;
+      } else {
+        const created = await createTeam(newTeam);
+        if (!created.team) return json({ message: created.error ?? "Failed to create the team" }, 400);
+        team = created.team.slug;
+      }
     }
 
     const result = await registerUser({ name, email, password, role, team });

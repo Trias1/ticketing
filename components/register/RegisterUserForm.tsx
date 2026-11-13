@@ -59,8 +59,17 @@ function Section({ title, description, children }: { title: string; description:
   );
 }
 
-// viewer = yang sedang membuat akun. Superadmin membuat admin untuk tim yang dipilih; admin membuat user di timnya sendiri.
-export default function RegisterUserForm({ viewer }: { viewer: { role: string; team: string } }) {
+type OpenTeam = { slug: string; name: string };
+
+// viewer = yang sedang membuat akun. Superadmin membuat admin untuk tim yang belum punya admin
+// (openTeams) atau untuk tim baru; admin membuat user di timnya sendiri.
+export default function RegisterUserForm({
+  viewer,
+  openTeams = [],
+}: {
+  viewer: { role: string; team: string };
+  openTeams?: OpenTeam[];
+}) {
   const router = useRouter();
   const superadmin = viewer.role === "superadmin";
   const listHref = `/dashboard/${viewer.team}/management-user`;
@@ -69,11 +78,17 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  // Superadmin: setiap admin baru mendapat tim baru miliknya sendiri (tim tidak dipakai bersama).
+  // Superadmin: pilih tim yang sudah ada (belum punya admin) atau buat tim baru.
+  const [teamMode, setTeamMode] = useState<"existing" | "new">(openTeams.length ? "existing" : "new");
+  const [existingTeam, setExistingTeam] = useState(openTeams[0]?.slug ?? "");
   const [newTeam, setNewTeam] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const useExisting = teamMode === "existing" && openTeams.length > 0;
+  const chosenTeamName = useExisting
+    ? openTeams.find((t) => t.slug === existingTeam)?.name ?? ""
+    : newTeam.trim();
 
 
   const handleGenerate = () => {
@@ -97,7 +112,11 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          superadmin ? { name, email, password, newTeam } : { name, email, password }
+          !superadmin
+            ? { name, email, password }
+            : useExisting
+              ? { name, email, password, existingTeam }
+              : { name, email, password, newTeam }
         ),
       });
       const data = await res.json().catch(() => ({}));
@@ -204,22 +223,76 @@ export default function RegisterUserForm({ viewer }: { viewer: { role: string; t
           </Section>
 
           {superadmin ? (
-            <Section title="Access" description="Each admin gets a new team of their own. Admins then create the users of their team.">
-              <Field label="New team name" htmlFor="new-team" hint="Every admin gets their own new team. You can rename it later on the Teams page.">
-                <input
-                  id="new-team"
-                  value={newTeam}
-                  onChange={(e) => setNewTeam(e.target.value)}
-                  required
-                  maxLength={50}
-                  autoComplete="off"
-                  className={inputClass}
-                  placeholder="e.g. Network Operations"
-                />
-              </Field>
+            <Section
+              title="Access"
+              description="Each team has one admin. Pick a team that doesn't have one yet, or create a new team. Admins then create the users of their team."
+            >
+              {openTeams.length > 0 && (
+                <fieldset>
+                  <legend className="mb-1 block text-sm font-semibold text-tk-text dark:text-tk-dark-text">Team</legend>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="team-mode"
+                        checked={teamMode === "existing"}
+                        onChange={() => setTeamMode("existing")}
+                        className="accent-tk-accent"
+                      />
+                      Existing team without an admin
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="team-mode"
+                        checked={teamMode === "new"}
+                        onChange={() => setTeamMode("new")}
+                        className="accent-tk-accent"
+                      />
+                      New team
+                    </label>
+                  </div>
+                </fieldset>
+              )}
+              {useExisting ? (
+                <Field label="Team" htmlFor="existing-team" hint="Only teams without an active admin are listed.">
+                  <select
+                    id="existing-team"
+                    value={existingTeam}
+                    onChange={(e) => setExistingTeam(e.target.value)}
+                    required
+                    className={inputClass}
+                  >
+                    {openTeams.map((t) => (
+                      <option key={t.slug} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              ) : (
+                <Field label="New team name" htmlFor="new-team" hint="You can rename it later on the Teams page.">
+                  <input
+                    id="new-team"
+                    value={newTeam}
+                    onChange={(e) => setNewTeam(e.target.value)}
+                    required
+                    maxLength={50}
+                    autoComplete="off"
+                    className={inputClass}
+                    placeholder="e.g. Network Operations"
+                  />
+                </Field>
+              )}
               <p className="rounded-md border border-tk-divider bg-tk-subtle px-3 py-2 text-sm text-tk-muted dark:border-tk-dark-divider dark:bg-tk-dark-subtle dark:text-tk-dark-muted">
                 This account will be the <span className="font-semibold">Admin</span> of{" "}
-                {newTeam.trim() ? <>the new <span className="font-semibold">{newTeam.trim()}</span> team</> : "a new team"}
+                {chosenTeamName ? (
+                  <>
+                    {useExisting ? "the" : "the new"} <span className="font-semibold">{chosenTeamName}</span> team
+                  </>
+                ) : (
+                  "a new team"
+                )}
                 . Admins work in projects and manage the user accounts of their team.
               </p>
             </Section>

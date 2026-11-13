@@ -21,14 +21,30 @@ export async function teamExists(slug: unknown) {
 const baseSlug = (name: string) =>
   slugify(name, { lower: true, strict: true }).slice(0, 36).replace(/-+$/, "") || "team";
 
-// Satu tim hanya punya satu admin aktif, supaya tim tidak dipakai bersama. Kembalikan nama admin
-// aktif lain di tim itu (selain exceptUserId), atau null kalau tim masih bebas.
-export async function otherActiveAdmin(team: string, exceptUserId: string) {
+// Satu tim hanya punya satu admin aktif. Kembalikan nama admin aktif lain di tim itu (selain
+// exceptUserId, kalau ada), atau null kalau tim belum punya admin.
+export async function otherActiveAdmin(team: string, exceptUserId?: string) {
   const other = await db.query.users.findFirst({
-    where: and(eq(users.team, team), eq(users.role, "admin"), ne(users.id, exceptUserId), ne(users.isActive, false)),
+    where: and(
+      eq(users.team, team),
+      eq(users.role, "admin"),
+      exceptUserId ? ne(users.id, exceptUserId) : undefined,
+      ne(users.isActive, false)
+    ),
     columns: { name: true },
   });
   return other?.name ?? null;
+}
+
+// Tim yang belum punya admin aktif: bisa dipilih saat superadmin membuat admin baru.
+export async function teamsWithoutAdmin() {
+  return db
+    .select({ slug: teams.slug, name: teams.name })
+    .from(teams)
+    .where(
+      sql`not exists (select 1 from ${users} where ${users.team} = ${teams.slug} and ${users.role} = 'admin' and ${users.isActive} is not false)`
+    )
+    .orderBy(asc(teams.name));
 }
 
 export function cleanTeamName(value: unknown) {

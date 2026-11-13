@@ -192,7 +192,7 @@ The dashboard shows the number of accounts, who is online now, superadmin accoun
 
 ### Creating an account
 
-Go to **New team admin**. Enter the name, email and a password. Then type the name of the admin's **new team**: every admin gets a team of their own, so no two admins share a team. The admin then creates the users of the team. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
+Go to **New team admin**. Enter the name, email and a password. Then choose the admin's team: an **existing team without an admin** (for example a division that already exists but has no admin yet), or a **new team** you name on the spot. Each team has one admin, so teams that already have one aren't offered. The admin then creates the users of the team. Use **Generate** for a strong random password and share it safely. The person changes it the first time they sign in.
 
 The superadmin doesn't create users directly.
 
@@ -203,7 +203,7 @@ The **Teams** page lists every team with its number of admins and accounts. Team
 - **Rename** a team at any time. Its accounts, projects and links stay the same.
 - **Delete** a team only when it has no accounts and no projects.
 
-A team is created together with its admin, on **New team admin**. Each team has **one admin**: you can't make a second account admin of a team that already has an active admin, or reactivate an old admin when the team has a new one.
+A team is created together with its admin, on **New team admin**. A team left without an admin can get a new one there too. Each team has **one admin**: you can't make a second account admin of a team that already has an active admin, or reactivate an old admin when the team has a new one.
 
 ### Managing accounts
 
